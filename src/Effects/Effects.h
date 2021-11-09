@@ -26,6 +26,33 @@ class Effect {
 };
 
 /**
+ * @brief Just set LED to the given color.
+ */
+class SolidColorEffect : Effect {
+
+    public:
+
+        SolidColorEffect(uint32_t color) : _color { color } {}
+
+        bool effectAction(
+            int ledX, 
+            int ledY, 
+            int ledZ, 
+            int ledIndex, 
+            unsigned int frame,
+            long unsigned int currentColor, 
+            long unsigned int& result
+        ) {
+            result = _color;
+            return true;
+        }
+
+    private:
+
+        uint32_t _color;
+};
+
+/**
  * @brief Fading rainbow effect.
  */
 class FadeRainbowEffect : Effect {

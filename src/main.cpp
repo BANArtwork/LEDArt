@@ -31,50 +31,32 @@ void setup() {
 
     int i;
 
-    for(i = 0; i < numled; i++) {    
-        ledDriver.setPixel(i, 0);
-    }
-
-    ledDriver.show();
-
-    delay(1000);
-
         auto slowRainbow = new FadeRainbowEffect(10, 4);
         auto fastRainbow = new FadeRainbowEffect(10, 1);
         auto dim = new DimEffect(1);
+        auto solid = new SolidColorEffect(0);
 
     // For each LED in the arc...
-    for(i = 0; i < 85; i++) {
+    for(i = 0; i < numled; i++) {
 
         // Create EffecTLed object.
         EffectLed* f = new EffectLed([](int i2, uint32_t c) { ledDriver.setPixel(i2, c); }, i, &map0);
-
-        auto sparkle = new SparkleEffect(20, 500, rand());
-
-        // Add effects.
-        f->addEffect((Effect*)slowRainbow);
-        f->addEffect((Effect*)dim);
-        f->addEffect((Effect*)sparkle);
+        f->addEffect((Effect*)solid);
 
         // Add the LED to the list.
         leds.insert(f);
     }
 
-    // For each remaining LED...
-    for(i = 86; i < numled; i++) {
-
-        // Create EffecTLed object.
-        EffectLed* f = new EffectLed([](int i2, uint32_t c) { ledDriver.setPixel(i2, c); }, i, &map0);
+    for(i = 0; i < 74; i++) {
+        auto l = leds[i];
+        if (l == NULL) break;
+        l->removeEffect(0);
 
         auto sparkle = new SparkleEffect(20, 500, rand());
 
-        // Add effects.
-        f->addEffect((Effect*)fastRainbow);
-        f->addEffect((Effect*)dim);
-        f->addEffect((Effect*)sparkle);
-
-        // Add the LED to the list.
-        leds.insert(f);
+        l->addEffect((Effect*)slowRainbow);
+        l->addEffect((Effect*)dim);
+        l->addEffect((Effect*)sparkle);
     }
 
     log("Setup complete");
