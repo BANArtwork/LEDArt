@@ -9,7 +9,6 @@ const int s0xMap[NUM_LEDS] = {
     1, 0, 2, 1, 2, 1, 2, 1
 };
 
-LedMap map0 = LedMap(0, NUM_LEDS, s0xMap, s0xMap, s0xMap);
-
+LedMap map0 = LedMap(NUM_LEDS, s0xMap, s0xMap, s0xMap);
 
 #endif

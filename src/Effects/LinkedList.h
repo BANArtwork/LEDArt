@@ -1,20 +1,27 @@
 #ifndef LINKEDLIST_H
 #define LINKEDLIST_H
 
-template <typename T>
-class ListNode {
-
-    public: 
-
-        T data;
-        ListNode* next;
-};
-
+/**
+ * @brief A basic linked list implementation.
+ * 
+ * @tparam T Data type to be held in the list.
+ */
 template <typename T>
 class LinkedList {
 
     public:
         
+        /**
+         * @brief List node class.
+         */
+        class ListNode {
+
+            public: 
+
+                T data;
+                ListNode* next;
+        };
+
         /**
          * @brief Get the first item in the list.
          * 
@@ -44,7 +51,7 @@ class LinkedList {
          * @return T 
          */
         T operator[](int index) {
-            ListNode<T>* result = _start;
+            ListNode* result = _start;
             int i = index;
             while (i > 0 && result != NULL) {
                 result = result->next;
@@ -64,7 +71,7 @@ class LinkedList {
         void insert(T insert, int index = -1) {
             
             // Create new list node.
-            ListNode<T>* newNode = new ListNode<T>();
+            ListNode* newNode = new ListNode();
             newNode->data = insert;
 
             // Insert before first item.
@@ -75,12 +82,12 @@ class LinkedList {
             }
             
             // Cast to unsigned and decrement to 
-            // get the item to instert after.
+            // get the item to insert after.
             unsigned int i = index;
             i--;
 
             // Get the item to insert after.
-            ListNode<T>* item = _start;
+            ListNode* item = _start;
             while(i > 0 && item->next != NULL) {
                 item = item->next;
                 i--;
@@ -99,42 +106,45 @@ class LinkedList {
          */
         void remove(int index = -1) {
             
-            // Var to hold deleted item.
-            ListNode<T>* result;
+            // List is empty.
+            if (_start == NULL) return;
 
             // Delete first item.
             if (index == 0) {
-                result = _start;
+                ListNode* d = _start;
                 _start = _start->next;
-                delete result;
+                delete d;
                 return;
             }
-            
-            // Cast to unsigned and decrement to get 
-            // the item before the item to delete.
-            unsigned int i = index;
-            i--;
-            
-            // Get the item before the item to delete.
-            ListNode<T>* item = _start;
-            while(i > 0 && item->next->next != NULL) {
-                item = item->next;
+
+            // Advance to indexed item.
+            ListNode* a;
+            ListNode* b;
+            a = _start;
+            b = a->next;
+            int i = index - 1;
+            while(i > 0 && b->next != NULL) {
+                a = b;
+                b = b->next;
                 i--;
             }
-
-            // Delete the item.
-            result = item->next;
-            item->next = result->next;
-            delete result;
+            
+            // If we found the indexed item (or index was -1)...
+            if (i == 0 || index == -1) {
+            
+                // Then delete the item.
+                a->next = NULL;
+                delete b;
+            }
         }
 
     private:
     
         // Start of list.
-        ListNode<T>* _start;
+        ListNode* _start;
 
         // Current item in list.
-        ListNode<T>* _current;
+        ListNode* _current;
 };
 
 #endif

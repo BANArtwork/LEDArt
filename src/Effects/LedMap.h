@@ -1,18 +1,20 @@
 #ifndef LEDMAP_H
 #define LEDMAP_H
 
+/**
+ * @brief A class to handle mapping an LED in a strip 
+ * to its physical location within an installation.
+ */
 class LedMap {
 
     public:
 
         LedMap(
-            const int stripNum, 
             const int numLeds, 
             const int* xMap, 
             const int* yMap, 
             const int* zMap
         ) : 
-            _stripNum { stripNum },
             _numLeds { numLeds },
             _xMap { xMap },
             _yMap { yMap },
@@ -32,7 +34,6 @@ class LedMap {
 
     private:
 
-        const int _stripNum;
         const int _numLeds;
 
         const int* _xMap;

@@ -2,17 +2,12 @@
 #include "./WS2812/WS2812Serial.h"
 #include "./Effects/EffectLed.h"
 #include "./Effects/Map.h"
+#include "./Effects/Effects.h"
+#include "Logger.h"
+#include "Memcheck.h"
 
-const int numled = 5;
-const int pin = 24;
-
-// Usable pins:
-//   Teensy LC:   1, 4, 5, 24
-//   Teensy 3.2:  1, 5, 8, 10, 31   (overclock to 120 MHz for pin 8)
-//   Teensy 3.5:  1, 5, 8, 10, 26, 32, 33, 48
-//   Teensy 3.6:  1, 5, 8, 10, 26, 32, 33
-//   Teensy 4.0:  1, 8, 14, 17, 20, 24, 29, 39
-//   Teensy 4.1:  1, 8, 14, 17, 20, 24, 29, 35, 47, 53
+const int numled = 147;
+const int pin = 5;
 
 byte drawingMemory[numled*3];         //  3 bytes per LED
 DMAMEM byte displayMemory[numled*12]; // 12 bytes per LED
@@ -21,129 +16,96 @@ WS2812Serial ledDriver(numled, displayMemory, drawingMemory, pin, WS2812_GRB);
 
 LinkedList<EffectLed*> leds = LinkedList<EffectLed*>();
 
+// bool sparkles2() {
 
-
-/*
-#define RED    0xFF0000
-#define GREEN  0x00FF00
-#define BLUE   0x0000FF
-#define YELLOW 0xFFFF00
-#define PINK   0xFF1088
-#define ORANGE 0xE05800
-#define WHITE  0xFFFFFF
-*/
-
-#define RED    0x160000
-#define GREEN  0x001600
-#define BLUE   0x000016
-#define YELLOW 0x101400
-#define PINK   0x120009
-#define ORANGE 0x100400
-#define WHITE  0x101010
-
-uint32_t colors[] = {RED, GREEN, BLUE, YELLOW, PINK, ORANGE, WHITE};
-bool rainbow(
-    int ledX, 
-    int ledY, 
-    int ledZ, 
-    int ledIndex, 
-    unsigned int frame,
-    uint32_t currentColor, 
-    uint32_t& result
-) {
-    unsigned int i = (ledIndex + frame) % 7;
-    auto c = colors[i];
-    result = c;
-    return true;
-}
-
-void colorWipe(int color, int wait) {
-  for (int i=0; i < ledDriver.numPixels(); i++) {
-    ledDriver.setPixel(i, color);
-    ledDriver.show();
-    delayMicroseconds(wait);
-  }
-}
-
-const int ledPin =  LED_BUILTIN;
-int ledState = LOW;  
+//     unsigned int rnd = rand() % 100;
+//     auto e = [rnd](int x, int y, int z, int i3, unsigned int f, uint32_t c, uint32_t& r) { return sparkles(10, 20, 20, rnd, x, y, z, i3, f, c, r); };
+// }
 
 void setup() {
 
-    pinMode(ledPin, OUTPUT);
+    logSetup();
 
-    // Init serial.
-    Serial.begin(9600);
-    while (!Serial) {;}
-
-    Serial.println("start");
-
+    // Start the LED driver.
     ledDriver.begin();
 
     int i;
-    for(i = 0; i < 5; i++) {
 
-        EffectLed* f = new EffectLed(&ledDriver, i, NULL);
-        f->addEffect(rainbow);
+    for(i = 0; i < numled; i++) {    
+        ledDriver.setPixel(i, 0);
+    }
+
+    ledDriver.show();
+
+    delay(1000);
+
+        auto slowRainbow = new FadeRainbowEffect(10, 4);
+        auto fastRainbow = new FadeRainbowEffect(10, 1);
+        auto dim = new DimEffect(1);
+
+    // For each LED in the arc...
+    for(i = 0; i < 85; i++) {
+
+        // Create EffecTLed object.
+        EffectLed* f = new EffectLed([](int i2, uint32_t c) { ledDriver.setPixel(i2, c); }, i, &map0);
+
+        auto sparkle = new SparkleEffect(20, 500, rand());
+
+        // Add effects.
+        f->addEffect((Effect*)slowRainbow);
+        f->addEffect((Effect*)dim);
+        f->addEffect((Effect*)sparkle);
+
+        // Add the LED to the list.
         leds.insert(f);
     }
-}
 
-void toggleLed() {
-    if (ledState == LOW) {
-      ledState = HIGH;
-    } else {
-      ledState = LOW;
+    // For each remaining LED...
+    for(i = 86; i < numled; i++) {
+
+        // Create EffecTLed object.
+        EffectLed* f = new EffectLed([](int i2, uint32_t c) { ledDriver.setPixel(i2, c); }, i, &map0);
+
+        auto sparkle = new SparkleEffect(20, 500, rand());
+
+        // Add effects.
+        f->addEffect((Effect*)fastRainbow);
+        f->addEffect((Effect*)dim);
+        f->addEffect((Effect*)sparkle);
+
+        // Add the LED to the list.
+        leds.insert(f);
     }
 
-    // set the LED with the ledState of the variable:
-    digitalWrite(ledPin, ledState);
+    log("Setup complete");
 }
 
-void mine() {
-    static unsigned int f = 0;
+void checkLeds() {
+
+    // Frame counter.
+    static unsigned int frame = 0;
+
+    // Time check.
     static unsigned long time = millis();
     unsigned long check = millis();
-    if (check - time > 200) {
+    if (check - time > 20) {
         time = check;
     
-        
+        // Run through list of LEDs and update them.
         EffectLed* led = leds.start();
         while (led != NULL) {
-            led->update(f);
+            led->update(frame);
             led = leds.next();
         }
 
+        // Show updated LEDs.
         ledDriver.show();
-        f++;
+        frame++;
     }
 }
 
-void test() {
-
-
-    //Serial.println("test");
-
-    
-  // change all the LEDs in 1.5 seconds
-  int microsec = 1500000 / ledDriver.numPixels();
-
-  colorWipe(RED, microsec);
-  colorWipe(GREEN, microsec);
-  colorWipe(BLUE, microsec);
-  colorWipe(YELLOW, microsec);
-  colorWipe(PINK, microsec);
-  colorWipe(ORANGE, microsec);
-  colorWipe(WHITE, microsec);
-}
-
-
 void loop() {
-
-   // test();
-   mine();
-    toggleLed();
-    delay(200);
+   checkLeds();
 }
 
 

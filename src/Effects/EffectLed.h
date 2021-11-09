@@ -1,23 +1,23 @@
-#ifndef EFFECTS_H
-#define EFFECTS_H
+#ifndef EFFECTLED_H
+#define EFFECTLED_H
 
 #include "./../WS2812/WS2812Serial.h"
 #include "Map.h"
 #include "LinkedList.h"
+#include "Effects.h"
 
-typedef bool (*EffectAction_t)(
-    int ledX, 
-    int ledY, 
-    int ledZ, 
-    int ledIndex, 
-    unsigned int frame,
-    uint32_t currentColor, 
-    uint32_t& result
-);
-
+/**
+ * @brief A class to describe an LED which has a series of effects applied to
+ * generate its color pattern.
+ */
 class EffectLed {
 
     public:
+
+        /**
+         * @brief Method signature for a driver that will set the pixel color.
+         */
+        typedef void (*PixelDriver_t)(int index, uint32_t color);
 
         /**
          * @brief Construct a new Led object
@@ -27,18 +27,18 @@ class EffectLed {
          * @param map The map to set x, y, and z values from the index.
          */
         EffectLed(
-            WS2812Serial* driver,
+            PixelDriver_t driver,
             int index,
             LedMap* map
         ) : 
             _driver { driver },
             _ledIndex { index } 
         {
-            _ledX = 0; //map->getX(_ledIndex);
-            _ledY = 0; //map->getY(_ledIndex);
-            _ledZ = 0; //map->getZ(_ledIndex);
+            _ledX = map->getX(_ledIndex);
+            _ledY = map->getY(_ledIndex);
+            _ledZ = map->getZ(_ledIndex);
             _color = 0;
-            _effectList = LinkedList<EffectAction_t>();
+            _effectList = LinkedList<Effect*>();
         };
 
         /**
@@ -50,14 +50,22 @@ class EffectLed {
             uint32_t color = _color;
 
             // Get first effect item.
-            auto effect= _effectList.start();
+            Effect* effect = _effectList.start();
 
             // For all efects...
             while (effect != NULL) {
 
                 // Check if it gives us an updated color.
                 uint32_t r;
-                bool hasNewColor = effect(_ledX, _ledY, _ledZ, _ledIndex, frame, color, r);
+                bool hasNewColor = effect->effectAction(
+                    _ledX, 
+                    _ledY, 
+                    _ledZ, 
+                    _ledIndex, 
+                    frame, 
+                    color, 
+                    r
+                );
 
                 // If it does, then update color.
                 if(hasNewColor) color = r;
@@ -68,37 +76,48 @@ class EffectLed {
 
             // If the color has changed, then update the LED.
             if (color != _color) {
-                _driver->setPixel(_ledIndex, color);
+                _driver(_ledIndex, color);
                 _color = color;
             }
         };
 
-        void addEffect(EffectAction_t effect, int index = -1) {
+        /**
+         * @brief Add an effect to this LED.
+         * 
+         * @param effect The effect to add.
+         * @param index Where in the list to add it. (-1 adds to end of list)
+         */
+        void addEffect(Effect* effect, int index = -1) {
             _effectList.insert(effect, index);
         };
 
+        /**
+         * @brief Remove an effect.
+         * 
+         * @param index Index of the effect to remove. (-1 removes last effect)
+         */
         void removeEffect(int index = -1) {
             _effectList.remove(index);
         };
 
     private:
 
-    // Pointer to the driver for this LED.
-    WS2812Serial* _driver;
+        // Driver for this LED.
+        PixelDriver_t _driver;
 
-    // The index of this LED in the LED strip.
-    int _ledIndex;
+        // The index of this LED in the LED strip.
+        int _ledIndex;
 
-    // The physical location of this LED in the installation.
-    int _ledX;
-    int _ledY;
-    int _ledZ;
-    
-    // The current LED color;
-    uint32_t _color;
+        // The physical location of this LED in the installation.
+        int _ledX;
+        int _ledY;
+        int _ledZ;
+            
+        // The current LED color;
+        uint32_t _color;
 
-    // List of effects.
-    LinkedList<EffectAction_t> _effectList;
+        // List of effects.
+        LinkedList<Effect*> _effectList;
 };
 
 #endif
