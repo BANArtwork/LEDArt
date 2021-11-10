@@ -15,13 +15,14 @@ class Effect {
     public:
 
         virtual bool effectAction(
-            int ledX, 
-            int ledY, 
-            int ledZ, 
-            int ledIndex, 
-            unsigned int frame,
-            long unsigned int currentColor, 
-            long unsigned int& result
+            uint32_t ledX, 
+            uint32_t ledY, 
+            uint32_t ledZ, 
+            uint32_t ledIndex, 
+            uint32_t frame,
+            uint32_t currentColor, 
+            uint32_t previousColor,
+            uint32_t& newColor
         );
 };
 
@@ -35,15 +36,16 @@ class SolidColorEffect : Effect {
         SolidColorEffect(uint32_t color) : _color { color } {}
 
         bool effectAction(
-            int ledX, 
-            int ledY, 
-            int ledZ, 
-            int ledIndex, 
-            unsigned int frame,
-            long unsigned int currentColor, 
-            long unsigned int& result
+            uint32_t ledX, 
+            uint32_t ledY, 
+            uint32_t ledZ, 
+            uint32_t ledIndex, 
+            uint32_t frame,
+            uint32_t currentColor, 
+            uint32_t previousColor,
+            uint32_t& newColor
         ) {
-            result = _color;
+            newColor = _color;
             return true;
         }
 
@@ -64,13 +66,14 @@ class FadeRainbowEffect : Effect {
             _speed { speed } {}
 
         bool effectAction(
-            int ledX, 
-            int ledY, 
-            int ledZ, 
-            int ledIndex, 
-            unsigned int frame,
-            long unsigned int currentColor, 
-            long unsigned int& result
+            uint32_t ledX, 
+            uint32_t ledY, 
+            uint32_t ledZ, 
+            uint32_t ledIndex, 
+            uint32_t frame,
+            uint32_t currentColor, 
+            uint32_t previousColor,
+            uint32_t& newColor
         ) {
             return fadeRainbow(
                 _fadeStep, 
@@ -81,7 +84,7 @@ class FadeRainbowEffect : Effect {
                 ledIndex, 
                 frame, 
                 currentColor, 
-                result
+                newColor
             );
         }
 
@@ -99,7 +102,7 @@ class FadeRainbowEffect : Effect {
             int ledIndex, 
             unsigned int frame,
             uint32_t currentColor, 
-            uint32_t& result
+            uint32_t& newColor
         ) {
             // Get frame for this effect (frame / speed factor).
             unsigned int x = frame / speed;
@@ -130,7 +133,7 @@ class FadeRainbowEffect : Effect {
             }
 
             // Set result and return true.
-            result = rgbToUint32(r, g, b);
+            newColor = rgbToUint32(r, g, b);
             return true;
         }
 };
@@ -145,13 +148,14 @@ class DimEffect : Effect {
         DimEffect(int dimFactor) : _dimFactor { dimFactor } {}
         
         bool effectAction(
-            int ledX, 
-            int ledY, 
-            int ledZ, 
-            int ledIndex, 
-            unsigned int frame,
-            long unsigned int currentColor, 
-            long unsigned int& result
+            uint32_t ledX, 
+            uint32_t ledY, 
+            uint32_t ledZ, 
+            uint32_t ledIndex, 
+            uint32_t frame,
+            uint32_t currentColor, 
+            uint32_t previousColor,
+            uint32_t& newColor
         ) {
             return dim(
                 _dimFactor, 
@@ -161,7 +165,7 @@ class DimEffect : Effect {
                 ledIndex, 
                 frame, 
                 currentColor, 
-                result
+                newColor
             );
         }
 
@@ -177,18 +181,21 @@ class DimEffect : Effect {
             int ledIndex, 
             unsigned int frame,
             uint32_t currentColor, 
-            uint32_t& result
+            uint32_t& newColor
         ) {
             uint8_t r, g, b;
             uint32toRgb(currentColor, r, g, b);
             r /= d;
             g /= d;
             b /= d;
-            result = rgbToUint32(r, g, b);
+            newColor = rgbToUint32(r, g, b);
             return true;
         }
 };
 
+/**
+ * @brief Effect to create random sparkles.
+ */
 class SparkleEffect : Effect {
 
     public:
@@ -199,13 +206,14 @@ class SparkleEffect : Effect {
             _rand { rand } {}
         
         bool effectAction(
-            int ledX, 
-            int ledY, 
-            int ledZ, 
-            int ledIndex, 
-            unsigned int frame,
-            long unsigned int currentColor, 
-            long unsigned int& result
+            uint32_t ledX, 
+            uint32_t ledY, 
+            uint32_t ledZ, 
+            uint32_t ledIndex, 
+            uint32_t frame,
+            uint32_t currentColor, 
+            uint32_t previousColor,
+            uint32_t& newColor
         ) {
             return sparkle(
                 _speed,
@@ -217,7 +225,7 @@ class SparkleEffect : Effect {
                 ledIndex, 
                 frame, 
                 currentColor, 
-                result
+                newColor
             );
         }
 
@@ -237,7 +245,7 @@ class SparkleEffect : Effect {
             int ledIndex, 
             unsigned int frame,
             uint32_t currentColor, 
-            uint32_t& result
+            uint32_t& newColor
         ) {
             // Calculate var for sparkle animation.
             unsigned int x = frame + rand;
@@ -266,10 +274,12 @@ class SparkleEffect : Effect {
             b = (w > b) ? w : b;
 
             // Set result and return true.
-            result = rgbToUint32(r, g, b);
+            newColor = rgbToUint32(r, g, b);
             return true; 
         }
 };
+
+
 
 
 /**

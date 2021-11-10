@@ -5,58 +5,57 @@
 #include "./Effects/Effects.h"
 #include "Logger.h"
 #include "Memcheck.h"
+#include "Effects/HeartsEffect.h"
 
-const int numled = 147;
-const int pin = 5;
+// LED signal pin.
+const int ledPin = 5;
 
-byte drawingMemory[numled*3];         //  3 bytes per LED
-DMAMEM byte displayMemory[numled*12]; // 12 bytes per LED
+// Total number of LEDs in the piece.
+const int numleds = 74;
 
-WS2812Serial ledDriver(numled, displayMemory, drawingMemory, pin, WS2812_GRB);
+// GRAM.
+byte drawingMemory[numleds * 3];
+DMAMEM byte displayMemory[numleds * 12];
 
+// LED Driver.
+WS2812Serial ledDriver(
+    numleds, 
+    displayMemory, 
+    drawingMemory, 
+    ledPin, 
+    WS2812_GRB
+);
+
+// List of LEDs.
 LinkedList<EffectLed*> leds = LinkedList<EffectLed*>();
-
-// bool sparkles2() {
-
-//     unsigned int rnd = rand() % 100;
-//     auto e = [rnd](int x, int y, int z, int i3, unsigned int f, uint32_t c, uint32_t& r) { return sparkles(10, 20, 20, rnd, x, y, z, i3, f, c, r); };
-// }
 
 void setup() {
 
+    // Set up logger.
     logSetup();
 
     // Start the LED driver.
     ledDriver.begin();
 
+    // Create LEDs
     int i;
-
-        auto slowRainbow = new FadeRainbowEffect(10, 4);
-        auto fastRainbow = new FadeRainbowEffect(10, 1);
-        auto dim = new DimEffect(1);
-        auto solid = new SolidColorEffect(0);
-
-    // For each LED in the arc...
-    for(i = 0; i < numled; i++) {
-
-        // Create EffecTLed object.
+    for(i = 0; i < numleds; i++) {
         EffectLed* f = new EffectLed([](int i2, uint32_t c) { ledDriver.setPixel(i2, c); }, i, &map0);
-        f->addEffect((Effect*)solid);
-
-        // Add the LED to the list.
         leds.insert(f);
     }
 
-    for(i = 0; i < 74; i++) {
-        auto l = leds[i];
-        if (l == NULL) break;
-        l->removeEffect(0);
+    // For each heart...
+    for (i = 0; i < numHearts; i++){
+        auto h = hearts[i];
 
-        auto sparkle = new SparkleEffect(20, 500, rand());
+        // Create heart effect.
+        auto heartsEffect = new HeartEffect(100, 400, h.firstLed);
 
-        l->addEffect((Effect*)slowRainbow);
-        l->addEffect((Effect*)dim);
-        l->addEffect((Effect*)sparkle);
+        // Add the effect to each LED in the heart.
+        int x;
+        for (x = h.firstLed; x < h.firstLed + h.numLeds; x++) {
+            leds[x]->addEffect((Effect*)heartsEffect);
+        }
     }
 
     log("Setup complete");

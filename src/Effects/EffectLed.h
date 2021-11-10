@@ -47,7 +47,7 @@ class EffectLed {
         void update(unsigned int frame) {
 
             // Init working var.
-            uint32_t color = _color;
+            uint32_t color = 0;
 
             // Get first effect item.
             Effect* effect = _effectList.start();
@@ -64,6 +64,7 @@ class EffectLed {
                     _ledIndex, 
                     frame, 
                     color, 
+                    _color,
                     r
                 );
 
