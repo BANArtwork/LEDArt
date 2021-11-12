@@ -51,6 +51,10 @@ class LinkedList {
          * @return T 
          */
         T operator[](int index) {
+            return get(index);
+        }
+
+        T get(int index) {
             ListNode* result = _start;
             int i = index;
             while (i > 0 && result != NULL) {

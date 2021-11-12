@@ -1,3 +1,6 @@
+/**
+ * Some color definitions.
+ */
 #ifndef COLORS_H
 #define COLORS_H
 

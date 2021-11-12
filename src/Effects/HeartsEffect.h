@@ -1,7 +1,8 @@
 #ifndef HEARTSEFFECT_H
 #define HEARTSEFFECT_H
 
-#include "Effects.h"
+#include "Effect.h"
+#include "./../Util/ColorConverters.h"
 
 // Struct to define the hearts and a list of hearts.
 typedef struct Heart {

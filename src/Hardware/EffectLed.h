@@ -1,10 +1,10 @@
 #ifndef EFFECTLED_H
 #define EFFECTLED_H
 
-#include "./../WS2812/WS2812Serial.h"
-#include "Map.h"
-#include "LinkedList.h"
-#include "Effects.h"
+#include "WS2812/WS2812Serial.h"
+#include "./Util/LinkedList.h"
+#include "./Effects/Effect.h"
+#include "LedMap.h"
 
 /**
  * @brief A class to describe an LED which has a series of effects applied to
@@ -101,6 +101,10 @@ class EffectLed {
             _effectList.remove(index);
         };
 
+        uint32_t getColor() {
+            return _color;
+        }
+        
     private:
 
         // Driver for this LED.
