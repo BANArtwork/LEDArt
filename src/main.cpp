@@ -19,6 +19,7 @@
 #include "Effects/WhatADayAwayEffect.h"
 
 void updateLeds(int frame);
+void checkSegments();
 
 // List of LEDs.
 LinkedList<EffectLed*> leds = LinkedList<EffectLed*>();
@@ -54,28 +55,35 @@ void setup() {
     // Update to apply black effect.
     updateLeds(0);
 
-    auto whatADay = new WhatADayAwayEffect(
-        3,
-        &mainArcSegment, 
-        spokeSegments, 
-        numberOfSpokes,
-        &leds
-    );
-
-    auto dim = new DimEffect(4);
-
-    allLedsSegment.forEach([whatADay, dim](int index) {
-        auto l = leds[index];
-        auto sparkles = new SparkleEffect(
-            //100, 10000, rand()
-            3, 4000, rand()
-        );
-        l->addEffect((Effect*)whatADay);
-        l->addEffect((Effect*)dim);
-        l->addEffect((Effect*)sparkles);
-    });
+    // Check to help map segments.
+    checkSegments();
 
     log("Setup complete");
+}
+
+/**
+ * @brief For each segment in the segments array, alternate between red 
+ * and green. This method is to help map and build the segments list.
+ */
+void checkSegments() {
+
+    auto red = new SolidColorEffect(0xff0000);
+    auto green = new SolidColorEffect(0x00ff00);
+    auto dim = new DimEffect(10);
+
+    int i;
+    for (i = 0; i < numSegments; i++) {
+        auto color = (i % 2) ? red : green;
+        auto seg = segments[i];
+        seg->forEach([color, dim](int ledIndex) {
+            auto led = leds[ledIndex];
+            led->removeEffect(0);
+            led->addEffect((Effect*)color);
+            led->addEffect((Effect*)dim);
+        });
+    }
+
+    updateLeds(0);
 }
 
 void updateLeds(int frame) {
