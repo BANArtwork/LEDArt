@@ -35,8 +35,10 @@ void setup() {
     // Effect to black out all LEDs on startup.
     auto black = new SolidColorEffect(0);
 
+    auto rainbow = new FadeRainbowEffect(10, 5);
+
     // For all LEDs...
-    allLedsSegment.forEach([black](int index){
+    allLedsSegment.forEach([rainbow](int index){
 
         // Create EffectLed object.
         EffectLed* f = new EffectLed(
@@ -46,7 +48,7 @@ void setup() {
         );
 
         // Black out LED.
-        f->addEffect((Effect*)black);
+        f->addEffect((Effect*)rainbow);
 
         // Add to the list of LEDs.
         leds.insert(f);
@@ -56,7 +58,7 @@ void setup() {
     updateLeds(0);
 
     // Check to help map segments.
-    checkSegments();
+    //checkSegments();
 
     log("Setup complete");
 }
