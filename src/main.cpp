@@ -35,7 +35,7 @@ void setup() {
     // Effect to black out all LEDs on startup.
     auto black = new SolidColorEffect(0);
 
-    auto rainbow = new FadeRainbowEffect(10, 5);
+    auto rainbow = new FadeRainbowEffect(10, 10);
 
     // For all LEDs...
     allLedsSegment.forEach([rainbow](int index){
