@@ -17,6 +17,7 @@
 #include "Effects/SparkleEffect.h"
 #include "Effects/SimpleRainbowEffect.h"
 #include "Effects/WhatADayAwayEffect.h"
+#include "Effects/FireEffect.h"
 
 void updateLeds(int frame);
 void checkSegments();
@@ -35,7 +36,7 @@ void setup() {
     // Effect to black out all LEDs on startup.
     auto black = new SolidColorEffect(0);
 
-    auto rainbow = new FadeRainbowEffect(10, 10);
+    auto rainbow = new FireEffect(10, 10, 600);
 
     // For all LEDs...
     allLedsSegment.forEach([rainbow](int index){
