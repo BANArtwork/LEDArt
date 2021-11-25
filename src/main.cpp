@@ -1,7 +1,7 @@
 #include <Arduino.h>
 
 // Uncomment to turn logging on.
-//#define USE_LOG
+#define USE_LOG
 
 #include "Util/Logger.h"
 #include "Util/Memcheck.h"
@@ -17,6 +17,7 @@
 #include "Effects/SparkleEffect.h"
 #include "Effects/SimpleRainbowEffect.h"
 #include "Effects/WhatADayAwayEffect.h"
+#include "Effects/WhiteFadeEffect.h"
 
 void updateLeds(int frame);
 void checkSegments();
@@ -38,7 +39,7 @@ void setup() {
     auto rainbow = new FadeRainbowEffect(10, 5);
 
     // For all LEDs...
-    allLedsSegment.forEach([rainbow](int index){
+    allLedsSegment.forEach([black](int index){
 
         // Create EffectLed object.
         EffectLed* f = new EffectLed(
@@ -48,12 +49,19 @@ void setup() {
         );
 
         // Black out LED.
-        f->addEffect((Effect*)rainbow);
+        f->addEffect((Effect*)black);
 
         // Add to the list of LEDs.
         leds.insert(f);
     });
     
+    auto wf = new WhiteFadeEffect(5, 1, 20);
+
+    segments[0]->forEach([wf](int index){
+        leds[index]->removeEffect(0);
+        leds[index]->addEffect((Effect*)wf);
+    });
+
     // Update to apply black effect.
     updateLeds(0);
 
