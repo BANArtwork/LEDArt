@@ -8,7 +8,7 @@
 #include "./Hardware/LedMap.h"
 
 // Total number of LEDs in the piece.
-const int numLeds = 39;
+const int numLeds = 66;
 
 // A segment of all the LEDs.
 const Segment allLedsSegment = Segment(0, numLeds);
