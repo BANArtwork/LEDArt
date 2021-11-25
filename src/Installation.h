@@ -14,23 +14,23 @@ const int numLeds = 66;
 const Segment allLedsSegment = Segment(0, numLeds);
 
 // Individual segments.
-const int numSegments = 14;
+const int numSegments = 10;
 const Segment* segments[numSegments] = {
-    new Segment(0, 3),
-    new Segment(3, 3),
-    new Segment(6, 3),
-    new Segment(9, 3),
-    new Segment(12, 3),
-    new Segment(15, 3),
-    new Segment(18, 2),
-    new Segment(20, 2),
-    new Segment(22, 2),
-    new Segment(24, 3),
-    new Segment(27, 3),
-    new Segment(30, 3),
-    new Segment(33, 3),
-    new Segment(36, 3)
+    new Segment(0, 21),
+    new Segment(21, 5),
+    new Segment(26, 5),
+    new Segment(31, 5),
+    new Segment(36, 5),
+    new Segment(41, 5),
+    new Segment(46, 5),
+    new Segment(51, 5),
+    new Segment(56, 5),
+    new Segment(61, 5),
 };
+
+const Segment* arc = segments[0];
+const int numHearts = 9;
+const Segment** hearts = &segments[1];
 
 // Maps of the physical coordinates of each LED.
 // TODO 

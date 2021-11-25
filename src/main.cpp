@@ -1,7 +1,7 @@
 #include <Arduino.h>
 
 // Uncomment to turn logging on.
-//#define USE_LOG
+#define USE_LOG
 
 #include "Util/Logger.h"
 #include "Util/Memcheck.h"
@@ -35,10 +35,8 @@ void setup() {
     // Effect to black out all LEDs on startup.
     auto black = new SolidColorEffect(0);
 
-    auto rainbow = new FadeRainbowEffect(10, 5);
-
     // For all LEDs...
-    allLedsSegment.forEach([rainbow](int index){
+    allLedsSegment.forEach([black](int index){
 
         // Create EffectLed object.
         EffectLed* f = new EffectLed(
@@ -48,7 +46,7 @@ void setup() {
         );
 
         // Black out LED.
-        f->addEffect((Effect*)rainbow);
+        f->addEffect((Effect*)black);
 
         // Add to the list of LEDs.
         leds.insert(f);
@@ -56,6 +54,23 @@ void setup() {
     
     // Update to apply black effect.
     updateLeds(0);
+
+    // Add heart effect to hearts.
+    for (int i = 0; i < numHearts; i++) {
+        auto heart = hearts[i];
+        auto effect = new HeartEffect(100, 400, heart->getStart());
+        heart->forEach([effect, i](int index){
+            leds[index]->removeEffect(0);
+            leds[index]->addEffect((Effect*)effect);
+        });
+    }
+
+    // Add rainbow effect to arc.
+    auto rainbow = new FadeRainbowEffect(40, 20);
+    arc->forEach([rainbow](int index){
+        leds[index]->removeEffect(0);
+        leds[index]->addEffect((Effect*)rainbow);
+    });
 
     // Check to help map segments.
     //checkSegments();

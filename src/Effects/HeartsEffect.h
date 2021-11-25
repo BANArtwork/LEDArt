@@ -4,31 +4,6 @@
 #include "Effect.h"
 #include "./../Util/ColorConverters.h"
 
-// Struct to define the hearts and a list of hearts.
-typedef struct Heart {
-    int firstLed;
-    int numLeds;
-} Heart_t;
-
-// The hearts.
-const int numHearts = 14;
-const Heart hearts[numHearts] = {
-    Heart { 0, 5 },
-    Heart { 5, 5 },
-    Heart { 10, 5 },
-    Heart { 15, 5 },
-    Heart { 20, 5 },
-    Heart { 25, 7 },
-    Heart { 32, 5 },
-    Heart { 37, 5 },
-    Heart { 42, 5 },
-    Heart { 47, 5 },
-    Heart { 52, 5 },
-    Heart { 57, 7 },
-    Heart { 64, 5 },
-    Heart { 69, 5 }
-};
-
 // Colors for the hearts.
 const int numColors = 7;
 const uint32_t Colors[numColors] = {
