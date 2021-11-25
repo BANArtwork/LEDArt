@@ -36,9 +36,11 @@ void setup() {
     auto black = new SolidColorEffect(0);
 
     auto rainbow = new FadeRainbowEffect(10, 5);
+    auto gold = new SolidColorEffect(0xe98101);
+    auto dim = new DimEffect(2);
 
     // For all LEDs...
-    allLedsSegment.forEach([rainbow](int index){
+    allLedsSegment.forEach([gold, dim](int index){
 
         // Create EffectLed object.
         EffectLed* f = new EffectLed(
@@ -47,8 +49,12 @@ void setup() {
             &map0
         );
 
+        auto sparkles = new SparkleEffect(5, 400, rand());
+
         // Black out LED.
-        f->addEffect((Effect*)rainbow);
+        f->addEffect((Effect*)gold);
+        f->addEffect((Effect*)dim);
+        f->addEffect((Effect*)sparkles);
 
         // Add to the list of LEDs.
         leds.insert(f);
