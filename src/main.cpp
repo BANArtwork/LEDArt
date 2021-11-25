@@ -17,12 +17,48 @@
 #include "Effects/SparkleEffect.h"
 #include "Effects/SimpleRainbowEffect.h"
 #include "Effects/WhatADayAwayEffect.h"
+#include "Effects/FireEffect.h"
 
 void updateLeds(int frame);
 void checkSegments();
 
 // List of LEDs.
 LinkedList<EffectLed*> leds = LinkedList<EffectLed*>();
+
+/**
+ * @brief ForEach callback to set base fire color.
+ */
+Segment::SegmentAction_t baseFire = [](const Segment* seg, int index) {
+
+    // Get index of LED in the segment.
+    int indexInSegment = index - seg->getStart();
+
+    int count = seg->getCount();
+
+    // Offset start of segment.
+    int redSize = count * 2 / 3;
+    int redOffset = count - redSize;
+
+    int greenSize = count / 3;
+    int greenOffset = count - greenSize;
+
+    int redIndex = (indexInSegment < redOffset) 
+        ? 0 
+        : (indexInSegment - redOffset);
+
+    int greenIndex = (indexInSegment < greenOffset)
+        ? 0
+        : (indexInSegment - greenOffset);
+
+    // For first 3rd, set color to 0. 
+    int r = (0xff * redIndex) / redSize;
+    int g = (0xff * greenIndex) / greenSize;
+
+    auto fire = new SolidColorEffect(rgbToUint32(r, g, 0));
+    auto led = leds[index];
+    led->removeEffect(0);
+    led->addEffect((Effect*)fire);
+};
 
 void setup() {
 
@@ -35,10 +71,8 @@ void setup() {
     // Effect to black out all LEDs on startup.
     auto black = new SolidColorEffect(0);
 
-    auto rainbow = new FadeRainbowEffect(10, 5);
-
     // For all LEDs...
-    allLedsSegment.forEach([rainbow](int index){
+    allLedsSegment.forEach([black](int index){
 
         // Create EffectLed object.
         EffectLed* f = new EffectLed(
@@ -48,12 +82,20 @@ void setup() {
         );
 
         // Black out LED.
-        f->addEffect((Effect*)rainbow);
+        f->addEffect((Effect*)black);
 
         // Add to the list of LEDs.
         leds.insert(f);
     });
     
+    segments[0]->forEach(baseFire);
+    segments[1]->forEach(baseFire);
+
+    allLedsSegment.forEach([](int index){
+        auto fire = new FireEffect(2, 1000, rand());
+        leds[index]->addEffect((Effect*)fire);
+    });
+
     // Update to apply black effect.
     updateLeds(0);
 

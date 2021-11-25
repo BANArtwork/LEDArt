@@ -11,6 +11,9 @@ class Segment {
 
     public:
 
+        typedef std::function<void(const Segment* segment, int index)> SegmentAction_t;
+        typedef std::function<void(int index)> IndexAction_t;
+
         Segment(int start, int count) : 
             _start { start },
             _count { count } {}
@@ -23,7 +26,15 @@ class Segment {
             return _count;
         }
 
-        void forEach(std::function<void(int index)> loopAction) const {
+        void forEach(SegmentAction_t loopAction) const {
+            int last = _start + _count;
+            int i;
+            for (i = _start; i < last; i++) {
+                loopAction(this, i);
+            }
+        }
+
+        void forEach(IndexAction_t loopAction) const {
             int last = _start + _count;
             int i;
             for (i = _start; i < last; i++) {

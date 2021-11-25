@@ -16,8 +16,8 @@ const Segment allLedsSegment = Segment(0, numLeds);
 // Individual segments.
 const int numSegments = 2;
 const Segment* segments[numSegments] = {
-    new Segment(0, 20),
-    new Segment(20, 28)
+    new Segment(0, 28),
+    new Segment(28, 20)
 };
 
 // Maps of the physical coordinates of each LED.
