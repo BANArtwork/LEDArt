@@ -1,7 +1,7 @@
 #include <Arduino.h>
 
 // Uncomment to turn logging on.
-#define USE_LOG
+//#define USE_LOG
 
 #include "Util/Logger.h"
 #include "Util/Memcheck.h"
@@ -17,7 +17,7 @@
 #include "Effects/SparkleEffect.h"
 #include "Effects/SimpleRainbowEffect.h"
 #include "Effects/WhatADayAwayEffect.h"
-#include "Effects/WhiteFadeEffect.h"
+#include "Effects/TwoColorFadeEffect.h"
 
 void updateLeds(int frame);
 void checkSegments();
@@ -55,11 +55,25 @@ void setup() {
         leds.insert(f);
     });
     
-    auto wf = new WhiteFadeEffect(5, 1, 20);
+    auto fade1 = new TwoColorFadeEffect(segments[0], 20, 20, 30, 0, 0xffffff);
 
-    segments[0]->forEach([wf](int index){
+    segments[0]->forEach([fade1](int index){
         leds[index]->removeEffect(0);
-        leds[index]->addEffect((Effect*)wf);
+        leds[index]->addEffect((Effect*)fade1);
+    });
+
+    auto fade2 = new TwoColorFadeEffect(segments[1], 20, 20, 30, 0, 0xffffff, true);
+
+    segments[1]->forEach([fade2](int index){
+        leds[index]->removeEffect(0);
+        leds[index]->addEffect((Effect*)fade2);
+    });
+
+    auto solid = new SolidColorEffect(0xffffff);
+
+    segments[2]->forEach([solid](int index){
+        leds[index]->removeEffect(0);
+        leds[index]->addEffect((Effect*)solid);
     });
 
     // Update to apply black effect.
