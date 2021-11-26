@@ -67,7 +67,7 @@ void setup() {
     }
 
     // Add rainbow effect to arc.
-    auto fade = new TwoColorFadeEffect(10, 20, 60, 0, 0xffffff);
+    auto fade = new TwoColorFadeEffect(20, 10, 60, 0, 0xffffff);
     arc->forEach([fade](int index){
         leds[index]->removeEffect(0);
         leds[index]->addEffect((Effect*)fade);
