@@ -1,7 +1,7 @@
 #include <Arduino.h>
 
 // Uncomment to turn logging on.
-#define USE_LOG
+//#define USE_LOG
 
 #include "Util/Logger.h"
 #include "Util/Memcheck.h"
@@ -17,6 +17,7 @@
 #include "Effects/SparkleEffect.h"
 #include "Effects/SimpleRainbowEffect.h"
 #include "Effects/WhatADayAwayEffect.h"
+#include "Effects/TwoColorFadeEffect.h"
 
 void updateLeds(int frame);
 void checkSegments();
@@ -58,7 +59,7 @@ void setup() {
     // Add heart effect to hearts.
     for (int i = 0; i < numHearts; i++) {
         auto heart = hearts[i];
-        auto effect = new HeartEffect(100, 400, heart->getStart());
+        auto effect = new HeartEffect(400, 2000, heart->getStart());
         heart->forEach([effect, i](int index){
             leds[index]->removeEffect(0);
             leds[index]->addEffect((Effect*)effect);
@@ -66,10 +67,10 @@ void setup() {
     }
 
     // Add rainbow effect to arc.
-    auto rainbow = new FadeRainbowEffect(40, 20);
-    arc->forEach([rainbow](int index){
+    auto fade = new TwoColorFadeEffect(10, 20, 60, 0, 0xffffff);
+    arc->forEach([fade](int index){
         leds[index]->removeEffect(0);
-        leds[index]->addEffect((Effect*)rainbow);
+        leds[index]->addEffect((Effect*)fade);
     });
 
     // Check to help map segments.
