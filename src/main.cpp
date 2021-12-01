@@ -57,36 +57,36 @@ void setup() {
     // Update to apply black effect.
     updateLeds(0);
 
-    auto white = new SolidColorEffect(0xffffff);
-    auto sparkle = new RandomColorSparkleEffect(10, 10);
+    // auto white = new SolidColorEffect(0xffffff);
+    // auto sparkle = new RandomColorSparkleEffect(10, 10);
 
-    allLedsSegment.forEach([white, sparkle](int index){
-        leds[index]->removeEffect(0);
-        leds[index]->addEffect((Effect*)white);
-        leds[index]->addEffect((Effect*)sparkle);
-    });
+    // allLedsSegment.forEach([white, sparkle](int index){
+    //     leds[index]->removeEffect(0);
+    //     leds[index]->addEffect((Effect*)white);
+    //     leds[index]->addEffect((Effect*)sparkle);
+    // });
 
-    auto rainbow = new FadeRainbowEffect(10, 5);
+    // auto rainbow = new FadeRainbowEffect(10, 5);
 
-    shortArc->forEach([rainbow](int index){
-        leds[index]->removeEffect(0);
-        leds[index]->removeEffect(1);
-        leds[index]->addEffect((Effect*)rainbow);
-    });
+    // shortArc->forEach([rainbow](int index){
+    //     leds[index]->removeEffect(0);
+    //     leds[index]->removeEffect(1);
+    //     leds[index]->addEffect((Effect*)rainbow);
+    // });
 
-    longArc->forEach([rainbow](int index){
-        leds[index]->removeEffect(0);
-        leds[index]->removeEffect(1);
-        leds[index]->addEffect((Effect*)rainbow);
-    });
+    // longArc->forEach([rainbow](int index){
+    //     leds[index]->removeEffect(0);
+    //     leds[index]->removeEffect(1);
+    //     leds[index]->addEffect((Effect*)rainbow);
+    // });
 
-    auto dim = new DimEffect(10);
-    allLedsSegment.forEach([dim](int index){
-        leds[index]->addEffect((Effect*)dim);
-    });
+    // auto dim = new DimEffect(10);
+    // allLedsSegment.forEach([dim](int index){
+    //     leds[index]->addEffect((Effect*)dim);
+    // });
 
     // Check to help map segments.
-    //checkSegments();
+    checkSegments();
 
     log("Setup complete");
 }
