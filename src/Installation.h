@@ -8,18 +8,31 @@
 #include "./Hardware/LedMap.h"
 
 // Total number of LEDs in the piece.
-const int numLeds = 50;
+const int numLeds = 297;
 
 // A segment of all the LEDs.
 const Segment allLedsSegment = Segment(0, numLeds);
 
 // Individual segments.
-const int numSegments = 3;
+const int numSegments = 13;
 const Segment* segments[numSegments] = {
-    new Segment(0, 21),
-    new Segment(21, 21),
-    new Segment(42, 8)
+    new Segment(0, 2),
+    new Segment(2, 3),
+    new Segment(5, 25),
+    new Segment(30, 38),
+    new Segment(68, 48),
+    new Segment(116, 20),
+    new Segment(136, 10),
+    new Segment(146, 29),
+    new Segment(175, 96),
+    new Segment(271, 12),
+    new Segment(283, 3),
+    new Segment(286, 9),
+    new Segment(295, 2),
 };
+
+const Segment* shortArc = segments[4];
+const Segment* longArc = segments[8];
 
 // Maps of the physical coordinates of each LED.
 // TODO 

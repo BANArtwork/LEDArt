@@ -18,6 +18,7 @@
 #include "Effects/SimpleRainbowEffect.h"
 #include "Effects/WhatADayAwayEffect.h"
 #include "Effects/TwoColorFadeEffect.h"
+#include "Effects/RandomColorSparkleEffect.h"
 
 void updateLeds(int frame);
 void checkSegments();
@@ -36,8 +37,6 @@ void setup() {
     // Effect to black out all LEDs on startup.
     auto black = new SolidColorEffect(0);
 
-    auto rainbow = new FadeRainbowEffect(10, 5);
-
     // For all LEDs...
     allLedsSegment.forEach([black](int index){
 
@@ -55,29 +54,36 @@ void setup() {
         leds.insert(f);
     });
     
-    auto fade1 = new TwoColorFadeEffect(segments[0], 20, 20, 30, 0, 0xffffff);
-
-    segments[0]->forEach([fade1](int index){
-        leds[index]->removeEffect(0);
-        leds[index]->addEffect((Effect*)fade1);
-    });
-
-    auto fade2 = new TwoColorFadeEffect(segments[1], 20, 20, 30, 0, 0xffffff, true);
-
-    segments[1]->forEach([fade2](int index){
-        leds[index]->removeEffect(0);
-        leds[index]->addEffect((Effect*)fade2);
-    });
-
-    auto solid = new SolidColorEffect(0xffffff);
-
-    segments[2]->forEach([solid](int index){
-        leds[index]->removeEffect(0);
-        leds[index]->addEffect((Effect*)solid);
-    });
-
     // Update to apply black effect.
     updateLeds(0);
+
+    auto white = new SolidColorEffect(0xffffff);
+    auto sparkle = new RandomColorSparkleEffect(10, 10);
+
+    allLedsSegment.forEach([white, sparkle](int index){
+        leds[index]->removeEffect(0);
+        leds[index]->addEffect((Effect*)white);
+        leds[index]->addEffect((Effect*)sparkle);
+    });
+
+    auto rainbow = new FadeRainbowEffect(10, 5);
+
+    shortArc->forEach([rainbow](int index){
+        leds[index]->removeEffect(0);
+        leds[index]->removeEffect(1);
+        leds[index]->addEffect((Effect*)rainbow);
+    });
+
+    longArc->forEach([rainbow](int index){
+        leds[index]->removeEffect(0);
+        leds[index]->removeEffect(1);
+        leds[index]->addEffect((Effect*)rainbow);
+    });
+
+    auto dim = new DimEffect(10);
+    allLedsSegment.forEach([dim](int index){
+        leds[index]->addEffect((Effect*)dim);
+    });
 
     // Check to help map segments.
     //checkSegments();
