@@ -11,11 +11,19 @@ class SparkleEffect : Effect {
 
     public:
 
-        SparkleEffect(int speed, int frequency, int rand) : 
-            _speed { speed }, 
-            _frequency { frequency },
-            _rand { rand } {}
-        
+        SparkleEffect(
+            int animationLength, 
+            int animationWindow, 
+            int animationFrameDiv,
+            uint32_t color = 0xffffff
+        ) :
+            _animationLength { animationLength }, 
+            _animationWindow { animationWindow },
+            _animationFrameDiv { animationFrameDiv },
+            _color { color } {
+            _rand = rand();
+        }
+
         bool effectAction(
             uint32_t ledX, 
             uint32_t ledY, 
@@ -26,10 +34,12 @@ class SparkleEffect : Effect {
             uint32_t previousColor,
             uint32_t& newColor
         ) {
-            return sparkle(
-                _speed,
-                _frequency, 
+            AnimationState state = sparkle(
+                _animationLength,
+                _animationWindow, 
+                _animationFrameDiv,
                 _rand,
+                _color,
                 ledX, 
                 ledY, 
                 ledZ, 
@@ -38,18 +48,34 @@ class SparkleEffect : Effect {
                 currentColor, 
                 newColor
             );
+
+            if (state == LAST_FRAME) {
+                _rand = rand();
+            }
+
+            return (state == FADING);
         }
 
     private:
 
-        int _speed;
-        int _frequency;
-        int _rand;
+        int _animationLength;
+        int _animationWindow;
+        int _animationFrameDiv;
+        unsigned int _rand;
+        uint32_t _color;
 
-        static bool sparkle(
-            int speed,
-            int frequency,
-            int rand,
+        enum AnimationState {
+            FADING,
+            LAST_FRAME,
+            COMPLETE
+        };
+
+        static AnimationState sparkle(
+            int animationLength,
+            int animationWindow,
+            int animationFrameDiv,
+            unsigned int random,
+            uint32_t color,
             int ledX, 
             int ledY, 
             int ledZ, 
@@ -58,35 +84,38 @@ class SparkleEffect : Effect {
             uint32_t currentColor, 
             uint32_t& newColor
         ) {
-            // Calculate var for sparkle animation.
-            unsigned int x = frame + rand;
-            x = x % frequency;
-            x = x * speed;
+            // Add frame and random val.
+            unsigned int x = frame + random;
+
+            // Divide by framediv to get animation frame.
+            x /= animationFrameDiv;
+
+            // Mod by window to see if we should animate.
+            x = x % animationWindow;
+
             uint8_t w;
 
             // Fade up.
-            if (x < 256) {
+            if (x < animationLength / 2) {
                 w = x;
 
             // Fade down.
-            } else if (x < 512) {
-                w = 511 - x;
+            } else if (x < animationLength) {
+                w = animationLength - x;
 
-            // No sparkle.
+            // Last frame.
+            } else if (x == animationLength) {
+                return LAST_FRAME;
+
+            // Animation complete.
             } else {
-                return false;
+                return COMPLETE;
             }
 
-            // Get greater of current color or white value.
-            uint8_t r, g, b;
-            uint32toRgb(currentColor, r, g, b);
-            r = (w > r) ? w : r;
-            g = (w > g) ? w : g;
-            b = (w > b) ? w : b;
+            // Interpolate from current color to random color.
+            newColor = interpolateColors(currentColor, color, animationLength / 2, w);
 
-            // Set result and return true.
-            newColor = rgbToUint32(r, g, b);
-            return true; 
+            return FADING; 
         }
 };
 

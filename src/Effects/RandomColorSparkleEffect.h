@@ -3,6 +3,7 @@
 
 #include "Effect.h"
 #include "./../Util/ColorConverters.h"
+#include "./../Util/Colors.h"
 
 /**
  * @brief Effect to create random sparkles.
@@ -11,11 +12,16 @@ class RandomColorSparkleEffect : Effect {
 
     public:
 
-        RandomColorSparkleEffect(int speed, int frequency) : 
-            _speed { speed }, 
-            _frequency { frequency } {
-                _rand = rand();
-            }
+        RandomColorSparkleEffect(
+            int animationLength, 
+            int animationWindow, 
+            int animationFrameDiv
+        ) : 
+            _animationLength { animationLength }, 
+            _animationWindow { animationWindow },
+            _animationFrameDiv { animationFrameDiv } {
+            _rand = rand();
+        }
         
         bool effectAction(
             uint32_t ledX, 
@@ -29,8 +35,9 @@ class RandomColorSparkleEffect : Effect {
         ) {
             AnimationState state = sparkle(
                 _randomColor,
-                _speed,
-                _frequency, 
+                _animationLength,
+                _animationWindow, 
+                _animationFrameDiv,
                 _rand,
                 ledX, 
                 ledY, 
@@ -42,7 +49,9 @@ class RandomColorSparkleEffect : Effect {
             );
 
             if (state == LAST_FRAME) {
-                _randomColor = rand() % _numColors;
+                int r = rand() % _numColors;
+                auto c = _colors[r];
+                _randomColor = c;
                 _rand = rand();
             }
 
@@ -51,18 +60,15 @@ class RandomColorSparkleEffect : Effect {
 
     private:
 
-        int _speed;
-        int _frequency;
-        int _rand;
+        int _animationLength;
+        int _animationWindow;
+        int _animationFrameDiv;
+        unsigned int _rand;
         uint32_t _randomColor;
 
-        static const int _numColors = 4;
-        static const uint32_t _colors[_numColors] = {
-            0xffffff,
-            0xff0000,
-            0x00ff00,
-            0x0000ff
-        };
+        static const int _numColors = 2;
+        
+         static const uint32_t _colors[_numColors];
 
         enum AnimationState {
             FADING,
@@ -72,9 +78,10 @@ class RandomColorSparkleEffect : Effect {
 
         static AnimationState sparkle(
             uint32_t randomColor,
-            int speed,
-            int frequency,
-            int rand,
+            int animationLength,
+            int animationWindow,
+            int animationFrameDiv,
+            unsigned int random,
             int ledX, 
             int ledY, 
             int ledZ, 
@@ -83,34 +90,46 @@ class RandomColorSparkleEffect : Effect {
             uint32_t currentColor, 
             uint32_t& newColor
         ) {
-            // Calculate var for sparkle animation.
-            unsigned int x = frame + rand;
-            x = x % frequency;
-            x = x * speed;
+            // Add frame and random val.
+            unsigned int x = frame + random;
+
+            // Divide by framediv to get animation frame.
+            x /= animationFrameDiv;
+
+            // Mod by window to see if we should animate.
+            x = x % animationWindow;
+
             uint8_t w;
 
             // Fade up.
-            if (x < 256) {
+            if (x < (animationLength / 2)) {
                 w = x;
 
             // Fade down.
-            } else if (x < 512) {
-                w = 511 - x;
+            } else if (x < animationLength) {
+                w = animationLength - x;
 
             // Last frame.
-            } else if (x == 512) {
+            } else if (x == animationLength) {
                 return LAST_FRAME;
-            
+                
             // Animation complete.
             } else {
                 return COMPLETE;
             }
 
             // Interpolate from current color to random color.
-            newColor = interpolateColors(currentColor, randomColor, 512, w);
+            newColor = interpolateColors(currentColor, randomColor, animationLength / 2, w);
 
             return FADING; 
         }
+};
+
+ const uint32_t RandomColorSparkleEffect::_colors[] = {
+    
+    0xff0000,
+    // 0x00ff00,
+    0x0000ff
 };
 
 #endif

@@ -34,6 +34,14 @@ const Segment* segments[numSegments] = {
 const Segment* shortArc = segments[4];
 const Segment* longArc = segments[8];
 
+const int numBalls = 4;
+const Segment* balls[numBalls] = {
+    segments[0],
+    segments[1],
+    segments[10],
+    segments[12],
+};
+
 // Maps of the physical coordinates of each LED.
 // TODO 
 const int s0xMap[numLeds] = {

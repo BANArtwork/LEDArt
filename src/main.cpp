@@ -57,33 +57,89 @@ void setup() {
     // Update to apply black effect.
     updateLeds(0);
 
-    auto white = new SolidColorEffect(0xffffff);
-    auto sparkle = new RandomColorSparkleEffect(10, 10);
+    // Add dim white solid color to all LEDs and then random color sparkle.
+    // auto white = new SolidColorEffect(0xffffff);
+    // auto dim = new DimEffect(10);
+    // allLedsSegment.forEach([white, dim](int index){
+    //     leds[index]->removeEffect(0);
+    //     leds[index]->addEffect((Effect*)white);
+    //     leds[index]->addEffect((Effect*)dim);
 
-    allLedsSegment.forEach([white, sparkle](int index){
+    //     auto sparkle = new RandomColorSparkleEffect(50, 200, 1);
+    //     leds[index]->addEffect((Effect*)sparkle);
+    // });
+
+    auto white = new SolidColorEffect(0xffffff);
+
+    auto blue = new SolidColorEffect(0x1b218f);
+    auto blueF = [blue](int index) {
+        leds[index]->removeEffect(0);
+        leds[index]->addEffect((Effect*)blue);
+
+        // auto sparkle = new RandomColorSparkleEffect(50, 200, 1);
+        auto sparkle = new SparkleEffect(100, 400, 2);
+        leds[index]->addEffect((Effect*)sparkle);
+    };
+
+    segments[0]->forEach([white](int index){
         leds[index]->removeEffect(0);
         leds[index]->addEffect((Effect*)white);
+    });
+    segments[1]->forEach([white](int index){
+        leds[index]->removeEffect(0);
+        leds[index]->addEffect((Effect*)white);
+    });
+    segments[10]->forEach([white](int index){
+        leds[index]->removeEffect(0);
+        leds[index]->addEffect((Effect*)white);
+    });
+    segments[12]->forEach([white](int index){
+        leds[index]->removeEffect(0);
+        leds[index]->addEffect((Effect*)white);
+    });
+
+    for (int x = 2; x < 4; x++) {
+        segments[x]->forEach(blueF);
+    }
+
+    // Then rmove all effects from the two arcs and add rainbow effect.
+    auto rainbow = new FadeRainbowEffect(10, 1);
+
+    auto dim = new DimEffect(4);
+    shortArc->forEach([white, dim](int index){
+        leds[index]->removeEffect(0);
+        leds[index]->addEffect((Effect*)white);
+        // auto sparkle = new RandomColorSparkleEffect(50, 200, 1);
+        auto sparkle = new SparkleEffect(50, 200, 1, 0);
         leds[index]->addEffect((Effect*)sparkle);
     });
 
-    auto rainbow = new FadeRainbowEffect(10, 5);
-
-    shortArc->forEach([rainbow](int index){
+    longArc->forEach([white, dim](int index){
         leds[index]->removeEffect(0);
-        leds[index]->removeEffect(1);
-        leds[index]->addEffect((Effect*)rainbow);
+        leds[index]->addEffect((Effect*)white);
+        // auto sparkle = new RandomColorSparkleEffect(50, 200, 1);
+
+        auto sparkle = new SparkleEffect(50, 200, 1, 0);
+        leds[index]->addEffect((Effect*)sparkle);
     });
 
-    longArc->forEach([rainbow](int index){
+
+    auto red = new SolidColorEffect(0x70040d);
+    auto redF = [red](int index) {
         leds[index]->removeEffect(0);
-        leds[index]->removeEffect(1);
-        leds[index]->addEffect((Effect*)rainbow);
-    });
+        leds[index]->addEffect((Effect*)red);
+        
+        // auto sparkle = new RandomColorSparkleEffect(50, 200, 1);
+        auto sparkle = new SparkleEffect(100, 400, 2);
+        leds[index]->addEffect((Effect*)sparkle);
+    };
 
-    auto dim = new DimEffect(10);
-    allLedsSegment.forEach([dim](int index){
-        leds[index]->addEffect((Effect*)dim);
-    });
+
+    int c[] = { 5, 6, 7, 9, 11 };
+    for (int y = 0; y < 5; y++) {
+        int index = c[y];
+        segments[index]->forEach(redF);
+    }
 
     // Check to help map segments.
     //checkSegments();
