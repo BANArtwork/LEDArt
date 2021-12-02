@@ -80,7 +80,7 @@ const Segment* outerEyeRing[outerEyeRingSegmentCount] = {
 };
 
 const int innerEyeRingSegmentCount = 22;
-const Segment* innerEyRing[innerEyeRingSegmentCount] = {
+const Segment* innerEyeRing[innerEyeRingSegmentCount] = {
     segments[9],
     segments[10],
     segments[11],
