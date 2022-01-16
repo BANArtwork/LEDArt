@@ -54,6 +54,12 @@ class LinkedList {
             return get(index);
         }
 
+        /**
+         * @brief Get an item in the list by index.
+         * 
+         * @param index 
+         * @return T 
+         */
         T get(int index) {
             ListNode* result = _start;
             int i = index;
@@ -63,6 +69,35 @@ class LinkedList {
             }
             if (result == NULL) return NULL;
             return result->data;
+        }
+
+        /**
+         * @brief Execute the given action on every list item.
+         * 
+         * @param loopAction 
+         */
+        void forEach(std::function<void(T item)> loopAction) {
+            ListNode* it = _start;
+            while (it != NULL) {
+                loopAction(it->data);
+                it = it->next;
+            }
+        }
+
+        /**
+         * @brief Return the first item in the list that matches the
+         * given predicate.
+         * 
+         * @param searchAction 
+         * @return T 
+         */
+        T findFirst(std::function<bool(T item)> searchAction) {
+            ListNode* it = _start;
+            while (it != NULL) {
+                if (searchAction(it)) return it;
+                it = it->next;
+            }
+            return NULL;
         }
 
         /**

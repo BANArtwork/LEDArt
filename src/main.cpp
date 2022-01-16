@@ -21,6 +21,8 @@
 #include "Effects/RandomColorSparkleEffect.h"
 #include "Effects/RadiateEffect.h"
 #include "Effects/SegmentFadeEffect.h"
+#include "Effects/PulseRainbowEffect.h"
+//#include "Effects/MultiLedSparkleEffect.h"
 
 void updateLeds(int frame);
 void checkSegments();
@@ -59,77 +61,79 @@ void setup() {
     // Update to apply black effect.
     updateLeds(0);
 
-    for (int i = 0; i < innerEyeRingSegmentCount; i++) {
-        auto s = innerEyeRing[i];
-        s->forEach([i](const Segment* seg, int index){
-            int o;
-            if (i > 8) {
-                o = ((i % 2) + index) % 2;
-            } else  {
-                o = (((i + 1) % 2) + index) % 2;
-            }
-            
-            int s = 40;
-            auto e = new RadiateEffect(o, s, s * 3, 1, 30);
-            leds[index]->removeEffect(0);
-            leds[index]->addEffect((Effect*)e);
-        });
-    }
-    for (int i = 0; i < outerEyeRingSegmentCount; i++) {
-        auto s = outerEyeRing[i];
-        s->forEach([i](const Segment* seg, int index){
-            int o;
-            int segIndex = index - seg->getStart();
-            if (i % 2) {
-                o = segIndex;
-            } else {
-                o = 3 - segIndex;
-            }
-            
-            int s = 40;
-            auto e = new RadiateEffect(o + 2, s, s * 3, 1, 30);
-            leds[index]->removeEffect(0);
-            leds[index]->addEffect((Effect*)e);
-        });
-    }
-    
-    for (int i = 0; i < stripeSegmentCount; i++) {
-        auto s = stripes[i];
-        auto e = new SegmentFadeEffect(i, 40, 2);
-        s->forEach([e](int index){
-            leds[index]->removeEffect(0);
-            leds[index]->addEffect((Effect*)e);
-        });
-    }
+    // const uint32_t cs[1] = {
+    //     0xffffff
+    // };
 
+    // allLedsSegment.forEach([cs](int index){
+    //     auto s = new MultiLedSparkleEffect(10, 200, 20, 3, cs, 1);
+    //     leds[index]->removeEffect(0);
+    //     leds[index]->addEffect((Effect*)s);
+    // });
+    auto rainbow = new FadeRainbowEffect(1, 768, 10);
+    auto dim = new DimEffect(10);
+    allLedsSegment.forEach([rainbow, dim](int index){
+        leds[index]->removeEffect(0);
+        leds[index]->addEffect((Effect*)rainbow);
+        leds[index]->addEffect((Effect*)dim);
+    });
+
+    auto s1 = segments[0];
     auto white = new SolidColorEffect(0xffffff);
-    auto dim = new DimEffect(2);
-    for (int i = 0; i < eyeSegmentCount; i++) {
-        auto s = ringedEye[i];
+    s1->forEach([white, dim](int index){
+        auto l = leds[index];
+        l->removeEffect(0);
+        l->removeEffect(1);
+        //auto sparkle = new SparkleEffect(5, 20, 100);
+        l->addEffect((Effect*)white);
+        //l->addEffect((Effect*)sparkle);
+        l->addEffect((Effect*)dim);
+    });
 
-        s->forEach([white, dim](int index){
-            leds[index]->removeEffect(0);
-            leds[index]->addEffect((Effect*)white);
-            //leds[index]->addEffect((Effect*)dim);
-        });
-
-        s = otherEye[i];
-
-        s->forEach([white, dim](int index){
-            leds[index]->removeEffect(0);
-            leds[index]->addEffect((Effect*)white);
-           // leds[index]->addEffect((Effect*)dim);
-        });
-    }
-
-    for (int i = 0; i < mouthSegmentCount; i++) {
-        auto s = mouth[i];
-
-        s->forEach([white](int index){
-            leds[index]->removeEffect(0);
-            leds[index]->addEffect((Effect*)white);
+    for (int i = 0; i < numCircles; i++) {
+        auto pulse = new PulseRainbowEffect(10, 768, 10, i * 100);
+        circles[i]->forEach([pulse, dim](int index){
+            auto l = leds[index];
+            l->removeEffect(0);
+            l->removeEffect(1);
+            auto sparkle = new SparkleEffect(5, 20, 100, 0xffffff);
+            l->addEffect((Effect*)pulse);
+            l->addEffect((Effect*)sparkle);
+            l->addEffect((Effect*)dim);
         });
     }
+
+    segments[7]->forEach([white, dim](int index){
+        auto l = leds[index];
+        l->removeEffect(0);
+        l->removeEffect(1);
+        l->addEffect((Effect*)white);
+        l->addEffect((Effect*)dim);
+    });
+
+    // segments[8]->forEach([white, dim](int index){
+    //     auto l = leds[index];
+    //     l->removeEffect(0);
+    //     l->removeEffect(1);
+    //     l->addEffect((Effect*)white);
+    //     l->addEffect((Effect*)dim);
+    // });
+
+    // segments[9]->forEach([white, dim](int index){
+    //     auto l = leds[index];
+    //     l->removeEffect(0);
+    //     l->removeEffect(1);
+    //     l->addEffect((Effect*)white);
+    //     l->addEffect((Effect*)dim);
+    // });
+
+    // segments[10]->forEach([white, dim](int index){
+    //     auto l = leds[index];
+    //     l->removeEffect(0);
+    //     l->removeEffect(1);
+    //     l->addEffect((Effect*)white);
+    //     l->addEffect((Effect*)dim);
+    // });
 
     // Check to help map segments.
    // checkSegments();

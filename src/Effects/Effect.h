@@ -10,22 +10,15 @@ class Effect {
 
     public:
 
-        //Effect(uint32_t frameDiv) : _frameDiv { frameDiv } {}
-
-        virtual bool effectAction(
-            uint32_t ledX, 
-            uint32_t ledY, 
-            uint32_t ledZ, 
-            uint32_t ledIndex, 
-            uint32_t frame,
+        virtual uint32_t effectAction(
+            int ledX, 
+            int ledY, 
+            int ledZ, 
+            unsigned int ledIndex, 
+            unsigned int frame,
             uint32_t currentColor, 
-            uint32_t previousColor,
-            uint32_t& newColor
+            uint32_t previousColor
         );
-
-    protected:
-
-        uint32_t _frameDiv;
 };
 
 #endif

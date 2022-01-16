@@ -49,31 +49,18 @@ class EffectLed {
             // Init working var.
             uint32_t color = 0;
 
-            // Get first effect item.
-            Effect* effect = _effectList.start();
-
-            // For all efects...
-            while (effect != NULL) {
-
-                // Check if it gives us an updated color.
-                uint32_t r;
-                bool hasNewColor = effect->effectAction(
+            // Run each effect action.
+            _effectList.forEach([&](Effect* effect){
+                color = effect->effectAction(
                     _ledX, 
                     _ledY, 
                     _ledZ, 
                     _ledIndex, 
                     frame, 
                     color, 
-                    _color,
-                    r
+                    _color
                 );
-
-                // If it does, then update color.
-                if(hasNewColor) color = r;
-            
-                // Go on to next effect.
-                effect = _effectList.next();
-            }
+            });
 
             // If the color has changed, then update the LED.
             if (color != _color) {

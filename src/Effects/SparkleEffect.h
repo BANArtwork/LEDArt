@@ -1,34 +1,64 @@
 #ifndef SPARKLEEFFECT_H
 #define SPARKLEEFFECT_H
 
-#include "Effect.h"
+#include "AnimationEffect.h"
 #include "./../Util/ColorConverters.h"
 
 /**
  * @brief Effect to create random sparkles.
  */
-class SparkleEffect : Effect {
+class SparkleEffect : AnimationEffect {
 
     public:
 
-        SparkleEffect(int speed, int frequency, int rand) : 
-            _speed { speed }, 
-            _frequency { frequency },
-            _rand { rand } {}
-        
-        bool effectAction(
-            uint32_t ledX, 
-            uint32_t ledY, 
-            uint32_t ledZ, 
-            uint32_t ledIndex, 
-            uint32_t frame,
+        SparkleEffect(
+            int frameDivisor,
+            int animationLength,
+            unsigned int animationWindow,
+            uint32_t sparkleColor
+        ) :
+        AnimationEffect(
+            frameDivisor,
+            animationLength
+        ),  
+            _animationWindow { animationWindow },
+            _sparkleColor { sparkleColor }
+        {
+            _rand = rand();
+            _randomColors = false;
+        }
+
+        SparkleEffect(
+            int frameDivisor,
+            int animationLength,
+            unsigned int animationWindow
+        ) :
+        AnimationEffect(
+            frameDivisor,
+            animationLength
+        ),  
+            _animationWindow { animationWindow }
+        {
+            _rand = rand();
+            _sparkleColor = rand();
+            _randomColors = true;
+        }
+
+        uint32_t animationEffectAction(
+            int ledX, 
+            int ledY, 
+            int ledZ, 
+            unsigned int ledIndex, 
+            unsigned int frame,
+            unsigned int animationLength,
             uint32_t currentColor, 
-            uint32_t previousColor,
-            uint32_t& newColor
+            uint32_t previousColor
         ) {
-            return sparkle(
-                _speed,
-                _frequency, 
+            uint32_t newColor;
+            AnimationState s = sparkle(
+                _animationWindow,
+                animationLength,
+                _sparkleColor, 
                 _rand,
                 ledX, 
                 ledY, 
@@ -38,55 +68,59 @@ class SparkleEffect : Effect {
                 currentColor, 
                 newColor
             );
+            if (s == FADING) {
+                return newColor;
+            }
+            if (s == LAST_FRAME) {
+                _rand = rand();
+                if (_randomColors) {
+                    _sparkleColor = rand();
+                }
+            }
+            return currentColor;
         }
 
     private:
 
-        int _speed;
-        int _frequency;
+        unsigned int _animationWindow;
         int _rand;
+        uint32_t _sparkleColor;
+        bool _randomColors;
 
-        static bool sparkle(
-            int speed,
-            int frequency,
+        enum AnimationState {
+            FADING,
+            LAST_FRAME,
+            COMPLETE
+        };
+
+        static AnimationState sparkle(
+            unsigned int animationWindow,
+            unsigned int animationLength,
+            uint32_t sparkleColor,
             int rand,
             int ledX, 
             int ledY, 
             int ledZ, 
             int ledIndex, 
             unsigned int frame,
-            uint32_t currentColor, 
+            uint32_t currentColor,
             uint32_t& newColor
         ) {
-            // Calculate var for sparkle animation.
             unsigned int x = frame + rand;
-            x = x % frequency;
-            x = x * speed;
-            uint8_t w;
+            x %= animationWindow;
+            if (x == animationLength) return LAST_FRAME;
+            if (x > animationLength) return COMPLETE;
 
-            // Fade up.
-            if (x < 256) {
-                w = x;
-
-            // Fade down.
-            } else if (x < 512) {
-                w = 511 - x;
-
-            // No sparkle.
+            int half = animationLength / 2;
+            uint32_t c;
+            if (x < half) {
+                c = interpolateColors(currentColor, sparkleColor, half, x);
             } else {
-                return false;
+                c = interpolateColors(currentColor, sparkleColor, half, animationLength - x);
             }
 
-            // Get greater of current color or white value.
-            uint8_t r, g, b;
-            uint32toRgb(currentColor, r, g, b);
-            r = (w > r) ? w : r;
-            g = (w > g) ? w : g;
-            b = (w > b) ? w : b;
-
-            // Set result and return true.
-            newColor = rgbToUint32(r, g, b);
-            return true; 
+            newColor = c;
+            return FADING;
         }
 };
 

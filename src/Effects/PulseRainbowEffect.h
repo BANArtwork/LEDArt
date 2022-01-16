@@ -1,13 +1,13 @@
-#ifndef FADERAINBOWEFFECT_H
-#define FADERAINBOWEFFECT_H
+#ifndef PULSERAINBOWEFFECT_H
+#define PULSERAINBOWEFFECT_H
 
 #include "AnimationEffect.h"
 #include "./../Util/ColorConverters.h"
 
 /**
- * @brief Fading rainbow effect.
+ * @brief Pulsing rainbow effect.
  */
-class FadeRainbowEffect : AnimationEffect {
+class PulseRainbowEffect : AnimationEffect {
 
     public:
 
@@ -20,16 +20,18 @@ class FadeRainbowEffect : AnimationEffect {
          * @param colorStep Number of 'steps' in the color difference 
          * between neighboring LEDs. Higher value == 'narrower' rainbow.
          */
-        FadeRainbowEffect(
+        PulseRainbowEffect(
             int frameDivisor,
             int animationLength,
-            int colorStep
+            unsigned int colorStep,
+            unsigned int offset
         ) :
         AnimationEffect(
             frameDivisor,
             animationLength
         ),  
-            _colorStep { colorStep } 
+            _colorStep { colorStep },
+            _offset { offset }
         {}
 
         uint32_t animationEffectAction(
@@ -42,11 +44,12 @@ class FadeRainbowEffect : AnimationEffect {
             uint32_t currentColor, 
             uint32_t previousColor
         ) {
-            return fadeRainbow(
+            return pulseRainbow(
                 ledIndex, 
                 frame, 
                 animationLength,
                 _colorStep,
+                _offset,
                 currentColor
             );
         }
@@ -54,16 +57,18 @@ class FadeRainbowEffect : AnimationEffect {
     private:
 
         unsigned int _colorStep;
+        unsigned int _offset;
 
-        static uint32_t fadeRainbow(
+        static uint32_t pulseRainbow(
             int ledIndex, 
             unsigned int frame,
             unsigned int animationLength,
             unsigned int colorStep,
+            unsigned int offset,
             uint32_t currentColor
         ) {
             // Add frame and LED index to create rainbow effect.
-            int x = (ledIndex + frame);
+            int x = frame + offset;
             x *= colorStep;
             x = x % animationLength;
 

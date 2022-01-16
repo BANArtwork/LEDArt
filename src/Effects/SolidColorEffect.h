@@ -12,18 +12,16 @@ class SolidColorEffect : Effect {
 
         SolidColorEffect(uint32_t color) : _color { color } {}
 
-        bool effectAction(
-            uint32_t ledX, 
-            uint32_t ledY, 
-            uint32_t ledZ, 
-            uint32_t ledIndex, 
-            uint32_t frame,
+        uint32_t effectAction(
+            int ledX, 
+            int ledY, 
+            int ledZ, 
+            unsigned int ledIndex, 
+            unsigned int frame,
             uint32_t currentColor, 
-            uint32_t previousColor,
-            uint32_t& newColor
+            uint32_t previousColor
         ) {
-            newColor = _color;
-            return true;
+            return _color;
         }
 
     private:
