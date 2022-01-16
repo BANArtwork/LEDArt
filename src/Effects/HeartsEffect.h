@@ -10,22 +10,19 @@ typedef struct Heart {
 } Heart_t;
 
 // The hearts.
-const int numHearts = 14;
+const int numHearts = 11;
 const Heart hearts[numHearts] = {
-    Heart { 0, 5 },
-    Heart { 5, 5 },
-    Heart { 10, 5 },
-    Heart { 15, 5 },
-    Heart { 20, 5 },
-    Heart { 25, 7 },
-    Heart { 32, 5 },
-    Heart { 37, 5 },
-    Heart { 42, 5 },
-    Heart { 47, 5 },
-    Heart { 52, 5 },
-    Heart { 57, 7 },
-    Heart { 64, 5 },
-    Heart { 69, 5 }
+    Heart { 0, 2 },
+    Heart { 2, 2 },
+    Heart { 4, 2 },
+    Heart { 6, 2 },
+    Heart { 8, 2 },
+    Heart { 10, 2 },
+    Heart { 12, 2 },
+    Heart { 14, 2 },
+    Heart { 16, 2 },
+    Heart { 18, 2 },
+    Heart { 20, 2 }
 };
 
 // Colors for the hearts.
