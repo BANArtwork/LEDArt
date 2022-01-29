@@ -3,6 +3,7 @@
 
 #include "AnimationEffect.h"
 #include "./../Util/ColorConverters.h"
+#include <Arduino.h>
 
 /**
  * @brief Effect to create random sparkles.
@@ -15,14 +16,16 @@ class SparkleEffect : AnimationEffect {
             int frameDivisor,
             int animationLength,
             unsigned int animationWindow,
-            uint32_t sparkleColor
+            int numSparkleColors,
+            uint32_t* sparkleColors
         ) :
         AnimationEffect(
             frameDivisor,
             animationLength
         ),  
             _animationWindow { animationWindow },
-            _sparkleColor { sparkleColor }
+            _sparkleColors { sparkleColors },
+            _numSparkleColors { numSparkleColors }
         {
             _rand = rand();
             _randomColors = false;
@@ -54,6 +57,26 @@ class SparkleEffect : AnimationEffect {
             uint32_t currentColor, 
             uint32_t previousColor
         ) {
+            // If we have just started a new frame and the previous frame 
+            // was the last animation frame...
+            if (_lastFrameFlag && _lastFrame != frame) {
+
+                // Reset flag.
+                _lastFrameFlag = false;
+
+                // Update rand and color values.
+                _rand = rand();
+                if (_randomColors) {
+                    _sparkleColor = (rand() & 0x00ffffff);
+                } else {
+                    int i = rand() % _numSparkleColors;
+                    _sparkleColor = _sparkleColors[i];                
+                }
+            }
+
+            // Update last frame value.
+            _lastFrame = frame;
+
             uint32_t newColor;
             AnimationState s = sparkle(
                 _animationWindow,
@@ -68,24 +91,29 @@ class SparkleEffect : AnimationEffect {
                 currentColor, 
                 newColor
             );
+
             if (s == FADING) {
                 return newColor;
             }
+
             if (s == LAST_FRAME) {
-                _rand = rand();
-                if (_randomColors) {
-                    _sparkleColor = rand();
-                }
+                _lastFrameFlag = true;
             }
+
             return currentColor;
         }
 
     private:
 
         unsigned int _animationWindow;
-        int _rand;
+        unsigned int _rand;
         uint32_t _sparkleColor;
+        uint32_t* _sparkleColors;
+        int _numSparkleColors;
         bool _randomColors;
+
+        unsigned int _lastFrame;
+        bool _lastFrameFlag;
 
         enum AnimationState {
             FADING,
@@ -113,7 +141,7 @@ class SparkleEffect : AnimationEffect {
 
             int half = animationLength / 2;
             uint32_t c;
-            if (x < half) {
+            if (x <= half) {
                 c = interpolateColors(currentColor, sparkleColor, half, x);
             } else {
                 c = interpolateColors(currentColor, sparkleColor, half, animationLength - x);

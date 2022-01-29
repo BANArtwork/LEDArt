@@ -67,18 +67,56 @@ void setup() {
     // Update to apply black effect.
     updateLeds(0);
 
-    // Check to help map segments.
-     checkSegments();
+    // Apply solid white effect to all LEDs first.
+    auto white = new SolidColorEffect(0xffffff);
+    auto whiteDim = new DimEffect(4);
+    allLedsSegment.forEach([white, whiteDim](int index){
+        leds[index]->removeEffect(0);
+        leds[index]->addEffect((Effect*)white);
+        leds[index]->addEffect((Effect*)whiteDim);
+    });
 
-     //auto rainbow = new ChasingRainbowEffect(1, 768, 20);
-    // static const uint32_t c[] = {0x00ffffff, 0, 0, 0};
-    // auto rainbow = new ChasingFadeEffect(1, 256, 20, 4, c);
-    // auto dim = new DimEffect(10);
-    // allLedsSegment.forEach([rainbow, dim](int index){
-    //     leds[index]->removeEffect(0);
-    //     leds[index]->addEffect((Effect*)rainbow);
-    //     leds[index]->addEffect((Effect*)dim);
-    // });
+    // Apply rainbow effect to left eye.
+    auto rainbow = new ChasingRainbowEffect(1, 256, 5);
+    auto dim = new DimEffect(1);
+    segments[5]->forEach([rainbow, dim](int index){
+        auto l = leds[index];
+        l->removeEffect(0);
+        l->removeEffect(1);
+        l->addEffect((Effect*)rainbow);
+        l->addEffect((Effect*)dim);
+    });
+
+    // And right eye.
+    segments[11]->forEach([rainbow, dim](int index){
+        auto l = leds[index];
+        l->removeEffect(0);
+        l->removeEffect(1);
+        l->addEffect((Effect*)rainbow);
+        l->addEffect((Effect*)dim);
+    });
+
+    // Apply pulsing color and sparkles to all circle segments.
+    static const uint32_t sparkleColors[] = {
+        0x00ff0000, 0x0000ff00, 0x000000ff,
+        0x00ffff00, 0x0000ffff, 0x00ff00ff
+    };
+
+    for (int i = 0; i < numCircles; i++) {
+        auto sparkle = new SparkleEffect(1, 100, 300, 6, sparkleColors);
+        circles[i]->forEach([white, sparkle, whiteDim](int index){
+            auto l = leds[index];
+            l->removeEffect(0);
+            l->removeEffect(1);
+          
+            l->addEffect((Effect*)white);
+            l->addEffect((Effect*)whiteDim);
+            l->addEffect((Effect*)sparkle);
+        });
+    }
+
+    // Check to help map segments.
+    //checkSegments();
 
     log("Setup complete");
 }
