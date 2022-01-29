@@ -80,6 +80,19 @@ void setup() {
     //     leds[index]->addEffect((Effect*)dim);
     // });
 
+    auto blue = new SolidColorEffect(0x0000FF);
+    // segments[7]->forEach([blue](int index){
+    //     auto led = leds[index];
+    //     led->removeEffect(0);
+    //     led->removeEffect(1);
+    //     led->addEffect((Effect*)blue);
+    // });
+    leds[542]->removeEffect(0);
+    leds[542]->removeEffect(1);
+
+    leds[542]->addEffect((Effect*)blue);
+    
+
     log("Setup complete");
 }
 
@@ -91,7 +104,7 @@ void checkSegments() {
 
     auto red = new SolidColorEffect(0xff0000);
     auto green = new SolidColorEffect(0x00ff00);
-    auto dim = new DimEffect(10);
+    auto dim = new DimEffect(4);
 
     int i;
     for (i = 0; i < numSegments; i++) {

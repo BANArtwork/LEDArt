@@ -23,12 +23,12 @@ const Segment* segments[numSegments] = {
     new Segment(181, 49),
     new Segment(230, 45),
     new Segment(275, 42),
-    new Segment(317, 40),
-    new Segment(363, 40),
-    new Segment(403, 40),
-    new Segment(443, 40),
+    new Segment(317, 50),
+    new Segment(367, 43),
+    new Segment(410, 48),
+    new Segment(449, 50),
 
-    new Segment(469, 40),
+    new Segment(499, 44),
 };
 
 // Maps of the physical coordinates of each LED.
