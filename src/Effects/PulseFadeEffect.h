@@ -1,13 +1,14 @@
-#ifndef CHASINGFADEEFFECT_H
-#define CHASINGFADEEFFECT_H
+#ifndef PULSEFADEEFFECT_H
+#define PULSEFADEEFFECT_H
 
 #include "FadeEffect.h"
 #include "./../Util/ColorConverters.h"
+#include <Arduino.h>
 
 /**
  * @brief An effect that will show a chasing fade between an array of colors.
  */
-class ChasingFadeEffect : FadeEffect {
+class PulseFadeEffect : FadeEffect {
 
     public:
 
@@ -23,12 +24,14 @@ class ChasingFadeEffect : FadeEffect {
          * @param numColors Total number of colors to fade between.
          * @param colors Array of colors to fade between
          */
-        ChasingFadeEffect(
+        PulseFadeEffect(
             int frameDivisor,
             int fadeLength,
             int fadeStep,
             int numColors,
             const uint32_t* colors,
+            int lastLedIndex,
+            int firstLedIndex,
             int segmentLength = 0,
             bool reverseDirection = false
         ) :
@@ -39,9 +42,13 @@ class ChasingFadeEffect : FadeEffect {
             numColors,
             colors
         ),  
+            _lastLedIndex { lastLedIndex },
+            _firstLedIndex { firstLedIndex },
             _segmentLength { segmentLength },
             _reverseDirection { reverseDirection }
-        {}
+        { 
+            _rand = rand();
+        }
 
         
         
@@ -57,8 +64,29 @@ class ChasingFadeEffect : FadeEffect {
             uint32_t previousColor,
             uint32_t& newColor
         ) {
-            int offset = _reverseDirection ? (_segmentLength - ledIndex) : ledIndex;
-            return chasingFade(
+  
+            // If we have just started a new frame and the previous frame 
+            // was the last animation frame...
+            if (_lastFrameFlag && _lastFrame != frame && ledIndex == _firstLedIndex) {
+
+                // Reset flag.
+                _lastFrameFlag = false;
+
+                // Update rand.
+                _rand = rand();
+
+               //Serial.printf("New rand: %d, last: %d, led: %d\r\n", _rand, _lastLedIndex, ledIndex);
+            }
+
+            // Update last frame value.
+            _lastFrame = frame;
+
+
+
+            unsigned int offset = _reverseDirection ? (_segmentLength - ledIndex) : ledIndex;
+            offset += _rand;
+
+            AnimationState s = chasingFade(
                 offset, 
                 frame, 
                 animationLength,
@@ -68,12 +96,26 @@ class ChasingFadeEffect : FadeEffect {
                 currentColor,
                 newColor
             );
+
+           // if(frame % animationLength == animationLength - 1) {
+               if(s == AnimationState::LAST_FRAME) {
+                _lastFrameFlag = true;
+               // Serial.println("LAST");
+            }
+         
+            return s;
         }
 
     private:
 
+        unsigned int _lastFrame;
+        bool _lastFrameFlag;
+
         int _segmentLength;
         bool _reverseDirection;
+        unsigned int _rand;
+        int _lastLedIndex;
+        int _firstLedIndex;
 };
 
 #endif

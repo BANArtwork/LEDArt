@@ -51,15 +51,17 @@ class EffectLed {
 
             // Run each effect action.
             _effectList.forEach([&](Effect* effect){
-                color = effect->effectAction(
-                    _ledX, 
-                    _ledY, 
-                    _ledZ, 
-                    _ledIndex, 
-                    frame, 
-                    color, 
-                    _color
-                );
+                if (effect->isActive()) {
+                    color = effect->effectAction(
+                        _ledX, 
+                        _ledY, 
+                        _ledZ, 
+                        _ledIndex, 
+                        frame, 
+                        color, 
+                        _color
+                    );
+                }
             });
 
             // If the color has changed, then update the LED.

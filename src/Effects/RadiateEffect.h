@@ -1,43 +1,45 @@
 #ifndef RADIATEEFFECT_H
 #define RADIATEEFFECT_H
 
-#include "Effect.h"
+#include "AnimationEffect.h"
 #include "./../Util/ColorConverters.h"
 
 /**
  * @brief Effect to create random sparkles.
  */
-class RadiateEffect : Effect {
+class RadiateEffect : AnimationEffect {
 
     public:
 
         RadiateEffect(
-            int order,
-            int animationLength, 
+            int frameDivisor,
+            int animationLength,
             int animationWindow, 
-            int animationFrameDiv,
+            int order,
             int overlap
         ) : 
-            _order { order },
-            _animationLength { animationLength }, 
+        AnimationEffect(
+            frameDivisor,
+            animationLength
+        ), 
             _animationWindow { animationWindow },
-            _animationFrameDiv { animationFrameDiv },
+            _order { order },
             _overlap { overlap } {}
         
-        bool effectAction(
-            uint32_t ledX, 
-            uint32_t ledY, 
-            uint32_t ledZ, 
-            uint32_t ledIndex, 
-            uint32_t frame,
+        uint32_t animationEffectAction(
+            int ledX, 
+            int ledY, 
+            int ledZ, 
+            unsigned int ledIndex, 
+            unsigned int frame,
+            unsigned int animationLength,
             uint32_t currentColor, 
-            uint32_t previousColor,
-            uint32_t& newColor
+            uint32_t previousColor
         ) {
-            return effect(
-                _animationLength,
+            uint32_t newColor;
+            bool useNewColor = effect(
+                animationLength,
                 _animationWindow, 
-                _animationFrameDiv,
                 _order,
                 _overlap,
                 ledX, 
@@ -48,21 +50,21 @@ class RadiateEffect : Effect {
                 currentColor, 
                 newColor
             );
+
+            if (useNewColor) return newColor;
+            return currentColor;
         }
 
     private:
 
-        int _order;        
-        int _animationLength;
         int _animationWindow;
-        int _animationFrameDiv;
+        int _order;        
         int _overlap;
 
 
         static bool effect(
             int animationLength,
             int animationWindow,
-            int animationFrameDiv,
             int order,
             int overlap,
             int ledX, 
@@ -73,15 +75,13 @@ class RadiateEffect : Effect {
             uint32_t currentColor, 
             uint32_t& newColor
         ) {
-            unsigned int x = frame / animationFrameDiv;
-            x = x % animationWindow;
-
+            unsigned int x = frame % animationWindow;
             unsigned int y = (animationLength - overlap) * order;
 
             int z;
 
             // Not animating yet.
-            if (x < y) return false;
+           // if (x < y) return false;
 
             // Done animating.
             if (x >= (y + animationLength)) return false;

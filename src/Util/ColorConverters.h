@@ -53,8 +53,8 @@ inline void uint32toRgb(
 uint32_t interpolateColors(
     uint32_t c1, 
     uint32_t c2, 
-    uint32_t max, 
-    uint32_t val
+    int max, 
+    int val
 ) {
     uint8_t r1, g1, b1;
     uint8_t r2, g2, b2;
@@ -66,7 +66,7 @@ uint32_t interpolateColors(
     gDif = (int)g2 - (int)g1;
     bDif = (int)b2 - (int)b1;
 
-    int r, g, b;
+    unsigned int r, g, b;
     r = ((rDif * val) / max) + r1;
     g = ((gDif * val) / max) + g1;
     b = ((bDif * val) / max) + b1;

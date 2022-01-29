@@ -19,6 +19,14 @@ class Effect {
             uint32_t currentColor, 
             uint32_t previousColor
         );
+
+        void activate() { _isActive = true; }
+        void deactivate() { _isActive = false; }
+        bool isActive() { return _isActive; }
+
+    private:
+
+        bool _isActive = true;
 };
 
 #endif

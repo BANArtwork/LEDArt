@@ -28,6 +28,9 @@
 #include "Effects/RadiateEffect.h"
 #include "Effects/SegmentFadeEffect.h"
 #include "Effects/PulseRainbowEffect.h"
+#include "Effects/ChasingFadeEffect.h"
+#include "Effects/FadeEffect.h"
+#include "Effects/PulseFadeEffect.h"
 //#include "Effects/MultiLedSparkleEffect.h"
 
 void updateLeds(int frame);
@@ -35,6 +38,10 @@ void checkSegments();
 
 // List of LEDs.
 LinkedList<EffectLed*> leds = LinkedList<EffectLed*>();
+
+LinkedList<Effect*> effectGroup1 = LinkedList<Effect*>();
+LinkedList<Effect*> effectGroup2 = LinkedList<Effect*>();
+LinkedList<Effect*> effectGroup3 = LinkedList<Effect*>();
 
 void setup() {
 
@@ -67,31 +74,41 @@ void setup() {
     // Update to apply black effect.
     updateLeds(0);
 
+    auto dim = new DimEffect(4);
+
+    for (int i = 0; i < numSegments; i++) {
+        auto segment = segments[i];
+
+        int numColors = 6;
+        static uint32_t colors[] = {0x00ffffff, 0, 0, 0, 0, 0};
+        int fadeLength = 60;
+        auto e1 = new PulseFadeEffect(1, fadeLength, 2, numColors, colors, (segment->getStart() + segment->getCount() - 1), segment->getStart(), segment->getCount(), (i + 1) % 2);
+        effectGroup1.insert((Effect*)e1);
+
+        segment->forEach([i, e1, dim, fadeLength, numColors](const Segment* seg, int index){
+            
+        auto e2 = new ChasingFadeEffect(2, 20, 2, 4, colors, seg->getCount(), (i + 1) % 2);
+        effectGroup2.insert((Effect*)e2);
+
+            int offset = i * 16;
+
+            auto e3 = new SegmentFadeEffect(1, 60, 2, offset, numColors, colors);
+        effectGroup3.insert((Effect*)e3);
+
+        
+            leds[index]->removeEffect(0);
+            leds[index]->addEffect((Effect*)e1);
+            leds[index]->addEffect((Effect*)e2);
+            leds[index]->addEffect((Effect*)e3);
+            leds[index]->addEffect((Effect*)dim);
+        });
+    }
+
+  
+   
+
     // Check to help map segments.
-     checkSegments();
-
-     //auto rainbow = new ChasingRainbowEffect(1, 768, 20);
-    // static const uint32_t c[] = {0x00ffffff, 0, 0, 0};
-    // auto rainbow = new ChasingFadeEffect(1, 256, 20, 4, c);
-    // auto dim = new DimEffect(10);
-    // allLedsSegment.forEach([rainbow, dim](int index){
-    //     leds[index]->removeEffect(0);
-    //     leds[index]->addEffect((Effect*)rainbow);
-    //     leds[index]->addEffect((Effect*)dim);
-    // });
-
-    auto blue = new SolidColorEffect(0x0000FF);
-    // segments[7]->forEach([blue](int index){
-    //     auto led = leds[index];
-    //     led->removeEffect(0);
-    //     led->removeEffect(1);
-    //     led->addEffect((Effect*)blue);
-    // });
-    leds[542]->removeEffect(0);
-    leds[542]->removeEffect(1);
-
-    leds[542]->addEffect((Effect*)blue);
-    
+    //checkSegments();
 
     log("Setup complete");
 }
@@ -158,9 +175,30 @@ void checkLeds() {
     frame++;
 }
 
+void switchEffects() {
+    static uint32_t timeCheck;
+    static int effectsIndex;
+    uint32_t now = millis();
+    if (now - timeCheck > 10000) {
+        timeCheck = now;
+        effectsIndex++;
+        effectsIndex %= 3;
+        effectGroup1.forEach([](Effect* e){ e->deactivate(); });
+        effectGroup2.forEach([](Effect* e){ e->deactivate(); });
+        effectGroup3.forEach([](Effect* e){ e->deactivate(); });
+        auto activate = (effectsIndex == 0) ? 
+            effectGroup1 : (effectsIndex == 1) ?
+            effectGroup2 : 
+            effectGroup3;
+
+        activate.forEach([](Effect* e){ e->activate(); });
+        Serial.printf("Switching: %d \r\n", effectsIndex);
+    }
+}
 
 void loop() {
     checkLeds();
+    switchEffects();
 }
 
 

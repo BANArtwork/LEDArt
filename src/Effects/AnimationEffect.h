@@ -27,7 +27,15 @@ class AnimationEffect : Effect {
             _frameDivisor { frameDivisor },
             _animationLength { animationLength } {}
 
-        virtual uint32_t animationEffectAction(
+    protected: 
+
+        enum AnimationState {
+            ANIMATING,
+            LAST_FRAME,
+            COMPLETE
+        };
+
+        virtual AnimationState animationEffectAction(
             int ledX, 
             int ledY, 
             int ledZ, 
@@ -35,7 +43,8 @@ class AnimationEffect : Effect {
             unsigned int frame,
             unsigned int animationLength,
             uint32_t currentColor, 
-            uint32_t previousColor
+            uint32_t previousColor,
+            uint32_t& newColor
         );
 
         uint32_t effectAction(
@@ -50,8 +59,10 @@ class AnimationEffect : Effect {
             // Calculate frame for animation. 
             int f = frame / _frameDivisor;
 
+            uint32_t newColor;
+
             // Get color for new frame.
-            uint32_t result = animationEffectAction(
+            AnimationState result = animationEffectAction(
                 ledX,
                 ledY,
                 ledZ,
@@ -59,10 +70,11 @@ class AnimationEffect : Effect {
                 f,
                 _animationLength,
                 currentColor,
-                previousColor
+                previousColor,
+                newColor
             );
 
-            return result;
+            return newColor;
         }
 
     private:
