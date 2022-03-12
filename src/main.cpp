@@ -56,11 +56,14 @@ void setup() {
     updateLeds(0);
 
     auto rainbow = new FadeRainbowEffect(10, 3);
-    allLedsSegment.forEach([rainbow](int index) {
+    auto dim = new DimEffect(10);
+
+    allLedsSegment.forEach([rainbow, dim](int index) {
         leds[index]->removeEffect(0);
         leds[index]->addEffect((Effect*)rainbow);
         auto sparkle = new SparkleEffect(10, 1500, rand());
         leds[index]->addEffect((Effect*)sparkle);
+        leds[index]->addEffect((Effect*)dim);
     });
 
     // Check to help map segments.
