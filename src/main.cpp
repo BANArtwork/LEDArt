@@ -19,7 +19,7 @@
 #include "Effects/WhatADayAwayEffect.h"
 
 void updateLeds(int frame);
-void checkSegments();
+void checkSegments(const Segment** segs, int numSegs, uint32_t c1, uint32_t c2);
 
 // List of LEDs.
 LinkedList<EffectLed*> leds = LinkedList<EffectLed*>();
@@ -56,18 +56,43 @@ void setup() {
     updateLeds(0);
 
     auto rainbow = new FadeRainbowEffect(10, 3);
-    auto dim = new DimEffect(10);
+    auto dim = new DimEffect(3);
 
-    allLedsSegment.forEach([rainbow, dim](int index) {
-        leds[index]->removeEffect(0);
-        leds[index]->addEffect((Effect*)rainbow);
-        auto sparkle = new SparkleEffect(10, 1500, rand());
-        leds[index]->addEffect((Effect*)sparkle);
-        leds[index]->addEffect((Effect*)dim);
-    });
+    for (int i = 0; i < numSegments; i++) {
+        auto s = segments[i];
+        s->forEach([rainbow, dim](int index) {
+
+            leds[index]->removeEffect(0);
+            leds[index]->addEffect((Effect*)rainbow);
+            // auto sparkle = new SparkleEffect(10, 1500, rand());
+            // leds[index]->addEffect((Effect*)sparkle);
+            leds[index]->addEffect((Effect*)dim);
+        });
+    }
+
+    auto white = new SolidColorEffect(0x00ff0000);
+    for (int j = 0; j < numStars; j++) {
+        auto s = stars[j];
+        s->forEach([white, dim](int index) {
+            leds[index]->removeEffect(0);
+            leds[index]->addEffect((Effect*)white);
+            auto sparkle = new SparkleEffect(10, 1500, rand());
+            leds[index]->addEffect((Effect*)sparkle);
+            leds[index]->addEffect((Effect*)dim);
+        });
+    }
+
+    // allLedsSegment.forEach([rainbow, dim](int index) {
+    //     leds[index]->removeEffect(0);
+    //     leds[index]->addEffect((Effect*)rainbow);
+    //     auto sparkle = new SparkleEffect(10, 1500, rand());
+    //     leds[index]->addEffect((Effect*)sparkle);
+    //     leds[index]->addEffect((Effect*)dim);
+    // });
 
     // Check to help map segments.
-    //checkSegments();
+    //checkSegments(segments, numSegments, 0x000000ff, 0x00ff00ff);
+    //checkSegments(stars, numStars, 0x00ff0000, 0x0000ff00);
 
     log("Setup complete");
 }
@@ -76,16 +101,16 @@ void setup() {
  * @brief For each segment in the segments array, alternate between red 
  * and green. This method is to help map and build the segments list.
  */
-void checkSegments() {
+void checkSegments(const Segment** segs, int numSegs, uint32_t c1, uint32_t c2) {
 
-    auto red = new SolidColorEffect(0xff0000);
-    auto green = new SolidColorEffect(0x00ff00);
+    auto red = new SolidColorEffect(c1);
+    auto green = new SolidColorEffect(c2);
     auto dim = new DimEffect(10);
 
     int i;
-    for (i = 0; i < numSegments; i++) {
+    for (i = 0; i < numSegs; i++) {
         auto color = (i % 2) ? red : green;
-        auto seg = segments[i];
+        auto seg = segs[i];
         seg->forEach([color, dim](int ledIndex) {
             auto led = leds[ledIndex];
             led->removeEffect(0);
