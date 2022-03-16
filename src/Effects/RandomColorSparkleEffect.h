@@ -17,16 +17,16 @@ class RandomColorSparkleEffect : Effect {
                 _rand = rand();
             }
         
-        bool effectAction(
-            uint32_t ledX, 
-            uint32_t ledY, 
-            uint32_t ledZ, 
-            uint32_t ledIndex, 
-            uint32_t frame,
+        uint32_t effectAction(
+            int ledX, 
+            int ledY, 
+            int ledZ, 
+            unsigned int ledIndex, 
+            unsigned int frame,
             uint32_t currentColor, 
-            uint32_t previousColor,
-            uint32_t& newColor
+            uint32_t previousColor
         ) {
+            uint32_t newColor;
             AnimationState state = sparkle(
                 _randomColor,
                 _speed,
@@ -46,7 +46,7 @@ class RandomColorSparkleEffect : Effect {
                 _rand = rand();
             }
 
-            return (state == FADING);
+            return newColor;
         }
 
     private:

@@ -9,7 +9,7 @@
  * By increasing the frame divisor, the animation can
  * be slowed down.
  */
-class AnimationEffect : Effect {
+class AnimationEffect : public Effect {
 
     public:
 
@@ -45,7 +45,7 @@ class AnimationEffect : Effect {
             uint32_t currentColor, 
             uint32_t previousColor,
             uint32_t& newColor
-        );
+        ) {};
 
         uint32_t effectAction(
             int ledX, 
@@ -57,7 +57,7 @@ class AnimationEffect : Effect {
             uint32_t previousColor
         ) {
             // Calculate frame for animation. 
-            int f = frame / _frameDivisor;
+            unsigned int f = frame / _frameDivisor;
 
             uint32_t newColor;
 

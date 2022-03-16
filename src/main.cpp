@@ -3,12 +3,6 @@
 // Uncomment to turn logging on.
 //#define USE_LOG
 
-// Uncomment to step through frames with serial commands.
-//#define SERIAL_FRAME_STEP
-#if defined(SERIAL_FRAME_STEP)
-#define USE_LOG
-#endif
-
 #include "Util/Logger.h"
 #include "Util/Memcheck.h"
 
@@ -23,25 +17,12 @@
 #include "Effects/SparkleEffect.h"
 #include "Effects/SimpleRainbowEffect.h"
 #include "Effects/WhatADayAwayEffect.h"
-#include "Effects/TwoColorFadeEffect.h"
-#include "Effects/RandomColorSparkleEffect.h"
-#include "Effects/RadiateEffect.h"
-#include "Effects/SegmentFadeEffect.h"
-#include "Effects/PulseRainbowEffect.h"
-#include "Effects/ChasingFadeEffect.h"
-#include "Effects/FadeEffect.h"
-#include "Effects/PulseFadeEffect.h"
-//#include "Effects/MultiLedSparkleEffect.h"
 
 void updateLeds(int frame);
-void checkSegments();
+void checkSegments(const Segment** segs, int numSegs, uint32_t c1, uint32_t c2);
 
 // List of LEDs.
 LinkedList<EffectLed*> leds = LinkedList<EffectLed*>();
-
-LinkedList<Effect*> effectGroup1 = LinkedList<Effect*>();
-LinkedList<Effect*> effectGroup2 = LinkedList<Effect*>();
-LinkedList<Effect*> effectGroup3 = LinkedList<Effect*>();
 
 void setup() {
 
@@ -74,41 +55,44 @@ void setup() {
     // Update to apply black effect.
     updateLeds(0);
 
-    auto dim = new DimEffect(4);
+    auto rainbow = new ChasingRainbowEffect(1, 256, 5);
+    auto dim = new DimEffect(10);
 
     for (int i = 0; i < numSegments; i++) {
-        auto segment = segments[i];
+        auto s = segments[i];
+        s->forEach([rainbow, dim](int index) {
 
-        int numColors = 6;
-        static uint32_t colors[] = {0x00ffffff, 0, 0, 0, 0, 0};
-        int fadeLength = 60;
-        auto e1 = new PulseFadeEffect(1, fadeLength, 2, numColors, colors, (segment->getStart() + segment->getCount() - 1), segment->getStart(), segment->getCount(), (i + 1) % 2);
-        effectGroup1.insert((Effect*)e1);
-
-        segment->forEach([i, e1, dim, fadeLength, numColors](const Segment* seg, int index){
-            
-        auto e2 = new ChasingFadeEffect(2, 20, 2, 4, colors, seg->getCount(), (i + 1) % 2);
-        effectGroup2.insert((Effect*)e2);
-
-            int offset = i * 16;
-
-            auto e3 = new SegmentFadeEffect(1, 60, 2, offset, numColors, colors);
-        effectGroup3.insert((Effect*)e3);
-
-        
             leds[index]->removeEffect(0);
-            leds[index]->addEffect((Effect*)e1);
-            leds[index]->addEffect((Effect*)e2);
-            leds[index]->addEffect((Effect*)e3);
+            leds[index]->addEffect((Effect*)rainbow);
+            // auto sparkle = new SparkleEffect(10, 1500, rand());
+            // leds[index]->addEffect((Effect*)sparkle);
             leds[index]->addEffect((Effect*)dim);
         });
     }
 
-  
-   
+    auto white = new SolidColorEffect(0x00ffffff);
+    for (int j = 0; j < numStars; j++) {
+        auto s = stars[j];
+        s->forEach([white, dim](int index) {
+            leds[index]->removeEffect(0);
+            leds[index]->addEffect((Effect*)white);
+            auto sparkle = new SparkleEffect(1, 150, (unsigned int)20000, (uint32_t)0xff);
+            leds[index]->addEffect((Effect*)sparkle);
+            leds[index]->addEffect((Effect*)dim);
+        });
+    }
+
+    // allLedsSegment.forEach([rainbow, dim](int index) {
+    //     leds[index]->removeEffect(0);
+    //     leds[index]->addEffect((Effect*)rainbow);
+    //     auto sparkle = new SparkleEffect(10, 1500, rand());
+    //     leds[index]->addEffect((Effect*)sparkle);
+    //     leds[index]->addEffect((Effect*)dim);
+    // });
 
     // Check to help map segments.
-    //checkSegments();
+    //checkSegments(segments, numSegments, 0x000000ff, 0x00ff00ff);
+    //checkSegments(stars, numStars, 0x00ff0000, 0x0000ff00);
 
     log("Setup complete");
 }
@@ -117,16 +101,16 @@ void setup() {
  * @brief For each segment in the segments array, alternate between red 
  * and green. This method is to help map and build the segments list.
  */
-void checkSegments() {
+void checkSegments(const Segment** segs, int numSegs, uint32_t c1, uint32_t c2) {
 
-    auto red = new SolidColorEffect(0xff0000);
-    auto green = new SolidColorEffect(0x00ff00);
-    auto dim = new DimEffect(4);
+    auto red = new SolidColorEffect(c1);
+    auto green = new SolidColorEffect(c2);
+    auto dim = new DimEffect(10);
 
     int i;
-    for (i = 0; i < numSegments; i++) {
+    for (i = 0; i < numSegs; i++) {
         auto color = (i % 2) ? red : green;
-        auto seg = segments[i];
+        auto seg = segs[i];
         seg->forEach([color, dim](int ledIndex) {
             auto led = leds[ledIndex];
             led->removeEffect(0);
@@ -156,49 +140,19 @@ void checkLeds() {
     // Frame counter.
     static unsigned int frame = 0;
 
-    // If debug stepping, check for Serial input.
-    #if defined(SERIAL_FRAME_STEP)
-    if (!Serial.available()) return;
-    int c = Serial.read();
-    if (c != ' ') return;
-    #endif
-
-    // Update LEDs.
-    updateLeds(frame);
-        
-    // Debug print the current frame.
-    #if defined(SERIAL_FRAME_STEP)
-    Serial.printf("%d ", frame);
-    #endif
-
-    // Inc frame.
-    frame++;
-}
-
-void switchEffects() {
-    static uint32_t timeCheck;
-    static int effectsIndex;
-    uint32_t now = millis();
-    if (now - timeCheck > 10000) {
-        timeCheck = now;
-        effectsIndex++;
-        effectsIndex %= 3;
-        effectGroup1.forEach([](Effect* e){ e->deactivate(); });
-        effectGroup2.forEach([](Effect* e){ e->deactivate(); });
-        effectGroup3.forEach([](Effect* e){ e->deactivate(); });
-        auto activate = (effectsIndex == 0) ? 
-            effectGroup1 : (effectsIndex == 1) ?
-            effectGroup2 : 
-            effectGroup3;
-
-        activate.forEach([](Effect* e){ e->activate(); });
-        Serial.printf("Switching: %d \r\n", effectsIndex);
-    }
+    // Time check.
+    //static unsigned long time = millis();
+    //unsigned long check = millis();
+    //if (check - time > 1) {
+        //time = check;
+    
+        updateLeds(frame);
+        frame++;
+    //}
 }
 
 void loop() {
-    checkLeds();
-    switchEffects();
+   checkLeds();
 }
 
 
