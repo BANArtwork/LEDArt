@@ -105,10 +105,18 @@ class FadeEffect : protected AnimationEffect {
             // Get colors.
             uint32_t color1 = colors[colorIndex1];
             uint32_t color2 = colors[colorIndex2];
+            if (color1 == 0) {
+                color1 = currentColor;
+            }
+            if (color2 == 0) {
+                color2 = currentColor;
+            }
 
             // Interpolate between the two colors.
             uint32_t result = interpolateColors(color1, color2, maxVal, lerpVal);
-            newColor = result;
+
+              newColor = result;
+        
 
             return ((x + fadeStep) >= animationLength) ? 
                 AnimationState::LAST_FRAME : 

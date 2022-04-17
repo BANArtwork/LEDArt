@@ -17,6 +17,7 @@
 #include "Effects/SparkleEffect.h"
 #include "Effects/SimpleRainbowEffect.h"
 #include "Effects/WhatADayAwayEffect.h"
+#include "Effects/ChasingEffect.h"
 
 void updateLeds(int frame);
 void checkSegments(const Segment** segs, int numSegs, uint32_t c1, uint32_t c2);
@@ -55,32 +56,21 @@ void setup() {
     // Update to apply black effect.
     updateLeds(0);
 
-    auto rainbow = new ChasingRainbowEffect(1, 256, 5);
-    auto dim = new DimEffect(10);
+    auto rainbow = new ChasingRainbowEffect(5, 256, 5);
+    auto dim = new DimEffect(3);
+    auto chase = new ChasingEffect(10, 35, 0xffffff, 1);
 
-    for (int i = 0; i < numSegments; i++) {
-        auto s = segments[i];
-        s->forEach([rainbow, dim](int index) {
+    
+        allLedsSegment.forEach([rainbow, dim, chase](int index) {
 
             leds[index]->removeEffect(0);
             leds[index]->addEffect((Effect*)rainbow);
-            // auto sparkle = new SparkleEffect(10, 1500, rand());
-            // leds[index]->addEffect((Effect*)sparkle);
+            //auto sparkle = new SparkleEffect(10, 1500, rand());
+            //leds[index]->addEffect((Effect*)sparkle);
             leds[index]->addEffect((Effect*)dim);
+            leds[index]->addEffect((Effect*)chase);
         });
-    }
-
-    auto white = new SolidColorEffect(0x00ffffff);
-    for (int j = 0; j < numStars; j++) {
-        auto s = stars[j];
-        s->forEach([white, dim](int index) {
-            leds[index]->removeEffect(0);
-            leds[index]->addEffect((Effect*)white);
-            auto sparkle = new SparkleEffect(1, 150, (unsigned int)20000, (uint32_t)0xff);
-            leds[index]->addEffect((Effect*)sparkle);
-            leds[index]->addEffect((Effect*)dim);
-        });
-    }
+    
 
     // allLedsSegment.forEach([rainbow, dim](int index) {
     //     leds[index]->removeEffect(0);
@@ -105,7 +95,7 @@ void checkSegments(const Segment** segs, int numSegs, uint32_t c1, uint32_t c2) 
 
     auto red = new SolidColorEffect(c1);
     auto green = new SolidColorEffect(c2);
-    auto dim = new DimEffect(10);
+    auto dim = new DimEffect(3);
 
     int i;
     for (i = 0; i < numSegs; i++) {
