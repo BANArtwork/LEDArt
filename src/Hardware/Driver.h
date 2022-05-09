@@ -8,7 +8,7 @@
 #include "./../Installation.h"
 
 // LED signal pin.
-const int ledPin = 5;
+const int ledPin = 1; //5;
 
 // GRAM.
 byte drawingMemory[numLeds * 3];
