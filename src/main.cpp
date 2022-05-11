@@ -57,20 +57,31 @@ void setup() {
     updateLeds(0);
 
     auto rainbow = new ChasingRainbowEffect(5, 256, 5);
-    auto dim = new DimEffect(3);
-    auto chase = new ChasingEffect(10, 35, 0xffffff, 1);
+    auto dim = new DimEffect(1);
+    auto chase = new ChasingEffect(12, 60, 0x7f7f7f, 5);
 
     
         allLedsSegment.forEach([rainbow, dim, chase](int index) {
 
             leds[index]->removeEffect(0);
             leds[index]->addEffect((Effect*)rainbow);
-            //auto sparkle = new SparkleEffect(10, 1500, rand());
-            //leds[index]->addEffect((Effect*)sparkle);
+            auto sparkle = new SparkleEffect(1, 400, 500);
             leds[index]->addEffect((Effect*)dim);
+            //leds[index]->addEffect((Effect*)sparkle);
             leds[index]->addEffect((Effect*)chase);
         });
     
+    for (int i = 0; i < numStars; i++) {
+        auto s = stars[i];
+        //auto blink = new BlinkEffect(0xffffff, 500, 500);
+        auto solid = new SolidColorEffect(0xffffff);
+        s->forEach([ solid](int index) {
+            leds[index]->removeEffect(0);
+            leds[index]->removeEffect(1);
+            //leds[index]->removeEffect(2);
+            leds[index]->addEffect((Effect*)solid);
+        });
+    };
 
     // allLedsSegment.forEach([rainbow, dim](int index) {
     //     leds[index]->removeEffect(0);
