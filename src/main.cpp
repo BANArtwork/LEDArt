@@ -17,6 +17,7 @@
 #include "Effects/SparkleEffect.h"
 #include "Effects/SimpleRainbowEffect.h"
 #include "Effects/WhatADayAwayEffect.h"
+#include "Effects/BlinkEffect.h"
 
 void updateLeds(int frame);
 void checkSegments();
@@ -55,16 +56,28 @@ void setup() {
     // Update to apply black effect.
     updateLeds(0);
 
-    auto rainbow = new FadeRainbowEffect(10, 3);
-    auto dim = new DimEffect(10);
+    auto rainbow = new FadeRainbowEffect(10, 7);
+    auto dim = new DimEffect(1);
 
     allLedsSegment.forEach([rainbow, dim](int index) {
         leds[index]->removeEffect(0);
         leds[index]->addEffect((Effect*)rainbow);
-        auto sparkle = new SparkleEffect(10, 1500, rand());
+        auto sparkle = new SparkleEffect(2, 2000, rand());
         leds[index]->addEffect((Effect*)sparkle);
         leds[index]->addEffect((Effect*)dim);
     });
+
+    for (int i = 0; i < numStars; i++) {
+        auto s = stars[i];
+        auto blink = new BlinkEffect(0xffffff, 500, 500);
+        auto solid = new SolidColorEffect(0xffffff);
+        s->forEach([blink, solid](int index) {
+            leds[index]->removeEffect(0);
+            leds[index]->removeEffect(1);
+            //leds[index]->removeEffect(2);
+            leds[index]->addEffect((Effect*)solid);
+        });
+    };
 
     // Check to help map segments.
     //checkSegments();
