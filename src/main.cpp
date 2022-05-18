@@ -58,7 +58,7 @@ void setup() {
 
     auto rainbow = new ChasingRainbowEffect(5, 256, 5);
     auto dim = new DimEffect(1);
-    auto chase = new ChasingEffect(12, 60, 0x7f7f7f, 5);
+    auto chase = new ChasingEffect(6, 60, 0x7f7f7f, 5);
 
     
         allLedsSegment.forEach([rainbow, dim, chase](int index) {
