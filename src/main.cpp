@@ -24,7 +24,29 @@ void checkSegments();
 // List of LEDs.
 LinkedList<EffectLed*> leds = LinkedList<EffectLed*>();
 
+IntervalTimer pwmTimer;
+const int hiTime = 5000;
+const int loTime = 10000 - hiTime;
+
+void ledPwmControl() {
+    static bool state;
+    if (state) {
+        pinMode(21, INPUT);
+        digitalWrite(21, HIGH);
+        pwmTimer.update(loTime);
+    } else {
+        pinMode(21, OUTPUT);
+        digitalWrite(21, LOW);
+        pwmTimer.update(hiTime);
+    }
+    state = !state;
+}
+
 void setup() {
+
+    pinMode(21, OUTPUT);
+    digitalWrite(21, LOW);
+    pwmTimer.begin(ledPwmControl, 1000);
 
     // Set up logger.
     logSetup();
