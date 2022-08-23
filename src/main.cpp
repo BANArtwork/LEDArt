@@ -56,19 +56,19 @@ void setup() {
     // Update to apply black effect.
     updateLeds(0);
 
-    auto rainbow = new ChasingRainbowEffect(5, 256, 5);
+    auto rainbow = new ChasingRainbowEffect(12, 256, 5);
     auto dim = new DimEffect(1);
-    auto chase = new ChasingEffect(6, 60, 0x7f7f7f, 5);
+    auto chase = new ChasingEffect(20, 30, 0x7f7f7f, 5, numLeds, true);
 
     
         allLedsSegment.forEach([rainbow, dim, chase](int index) {
 
             leds[index]->removeEffect(0);
             leds[index]->addEffect((Effect*)rainbow);
-            auto sparkle = new SparkleEffect(1, 400, 500);
+            //auto sparkle = new SparkleEffect(1, 400, 500);
             //leds[index]->addEffect((Effect*)dim);
             //leds[index]->addEffect((Effect*)sparkle);
-            //leds[index]->addEffect((Effect*)chase);
+            leds[index]->addEffect((Effect*)chase);
         });
     
     // for (int i = 0; i < numStars; i++) {
