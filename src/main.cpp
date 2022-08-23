@@ -25,6 +25,8 @@ void checkSegments(const Segment** segs, int numSegs, uint32_t c1, uint32_t c2);
 // List of LEDs.
 LinkedList<EffectLed*> leds = LinkedList<EffectLed*>();
 
+    const uint32_t fadeColors[] = {0x00ff00, 0xf000000, 0x003f00, 0x000000};
+
 void setup() {
 
     // Set up logger.
@@ -56,19 +58,20 @@ void setup() {
     // Update to apply black effect.
     updateLeds(0);
 
+    auto fade = new FadeEffect(1, 200, 1, 4, fadeColors);
     auto rainbow = new ChasingRainbowEffect(5, 256, 5);
     auto dim = new DimEffect(1);
-    auto chase = new ChasingEffect(6, 60, 0x7f7f7f, 5);
+    auto chase = new ChasingEffect(6, 40, 0x7f7f7f, 5);
 
     
-        allLedsSegment.forEach([rainbow, dim, chase](int index) {
+        allLedsSegment.forEach([fade, rainbow, dim, chase](int index) {
 
             leds[index]->removeEffect(0);
-            leds[index]->addEffect((Effect*)rainbow);
-            auto sparkle = new SparkleEffect(1, 400, 500);
+            leds[index]->addEffect((Effect*)fade);
+            //auto sparkle = new SparkleEffect(1, 400, 500);
             //leds[index]->addEffect((Effect*)dim);
             //leds[index]->addEffect((Effect*)sparkle);
-            //leds[index]->addEffect((Effect*)chase);
+            leds[index]->addEffect((Effect*)chase);
         });
     
     // for (int i = 0; i < numStars; i++) {

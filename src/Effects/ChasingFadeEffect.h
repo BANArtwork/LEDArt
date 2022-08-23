@@ -64,6 +64,7 @@ class ChasingFadeEffect : FadeEffect {
                 animationLength,
                 _fadeStep,
                 _numColors,
+                ledIndex,
                 _colors,
                 currentColor,
                 newColor

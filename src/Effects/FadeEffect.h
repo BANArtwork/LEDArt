@@ -58,6 +58,7 @@ class FadeEffect : protected AnimationEffect {
                 animationLength,
                 _fadeStep,
                 _numColors,
+                ledIndex,
                 _colors,
                 currentColor,
                 newColor
@@ -76,6 +77,7 @@ class FadeEffect : protected AnimationEffect {
             unsigned int animationLength,
             unsigned int fadeStep,
             unsigned int numColors,
+            unsigned int ledIndex,
             const uint32_t* colors,
             uint32_t currentColor,
             uint32_t& newColor
@@ -105,18 +107,20 @@ class FadeEffect : protected AnimationEffect {
             // Get colors.
             uint32_t color1 = colors[colorIndex1];
             uint32_t color2 = colors[colorIndex2];
-            if (color1 == 0) {
-                color1 = currentColor;
-            }
-            if (color2 == 0) {
-                color2 = currentColor;
-            }
+            // if (color1 == 0) {
+            //     color1 = currentColor;
+            // }
+            // if (color2 == 0) {
+            //     color2 = currentColor;
+            // }
 
             // Interpolate between the two colors.
             uint32_t result = interpolateColors(color1, color2, maxVal, lerpVal);
 
               newColor = result;
-        
+            if (ledIndex == 0) {
+                logSprintf("Color1: %08x, Color2: %08x, Max: %d, Lerp: %d, Result: %08x\r\n", color1, color2, maxVal, lerpVal, result);
+            }
 
             return ((x + fadeStep) >= animationLength) ? 
                 AnimationState::LAST_FRAME : 
