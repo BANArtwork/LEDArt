@@ -25,6 +25,26 @@ void checkSegments(const Segment** segs, int numSegs, uint32_t c1, uint32_t c2);
 // List of LEDs.
 LinkedList<EffectLed*> leds = LinkedList<EffectLed*>();
 
+uint32_t getColor(int x) {
+    return 0x7f7f7f;
+}
+
+uint32_t getColor2(int x) {
+    switch (x)
+    {
+        case 0: 
+        case 4:
+        return divideColor(0xff0000, 20);
+        case 1:
+        case 3:
+        return divideColor(0xff0000, 10);
+        case 2:
+        return 0xff0000;
+        default:
+        return 0l;
+    }
+ }
+
 void setup() {
 
     // Set up logger.
@@ -56,21 +76,29 @@ void setup() {
     // Update to apply black effect.
     updateLeds(0);
 
-    auto rainbow = new ChasingRainbowEffect(5, 256, 5);
-    auto dim = new DimEffect(1);
-    auto chase = new ChasingEffect(6, 60, 0x7f7f7f, 5);
+    auto rainbow = new ChasingRainbowEffect(1, 256);
+    auto dim = new DimEffect(4);
+    auto chase = new ChasingEffect(20, 50, getColor, 5);
 
     
-        allLedsSegment.forEach([rainbow, dim, chase](int index) {
+    allLedsSegment.forEach([rainbow, dim, chase](int index) {
 
-            leds[index]->removeEffect(0);
-            leds[index]->addEffect((Effect*)rainbow);
-            auto sparkle = new SparkleEffect(1, 400, 500);
-            leds[index]->addEffect((Effect*)dim);
-            //leds[index]->addEffect((Effect*)sparkle);
-            leds[index]->addEffect((Effect*)chase);
-        });
+        leds[index]->removeEffect(0);
+        leds[index]->addEffect((Effect*)rainbow);
+        auto sparkle = new SparkleEffect(1, 400, 500);
+        //leds[index]->addEffect((Effect*)chase);
+        leds[index]->addEffect((Effect*)dim);
+        //leds[index]->addEffect((Effect*)sparkle);
+    });
     
+    auto white = new SolidColorEffect(0xffffff);
+
+    arcSegment->forEach([white, dim](int index) {
+        leds[index]->removeEffect(0);
+        leds[index]->addEffect((Effect*)white);
+        leds[index]->addEffect((Effect*)dim);
+    });
+
     // for (int i = 0; i < numStars; i++) {
     //     auto s = stars[i];
     //     //auto blink = new BlinkEffect(0xffffff, 500, 500);
@@ -106,7 +134,7 @@ void checkSegments(const Segment** segs, int numSegs, uint32_t c1, uint32_t c2) 
 
     auto red = new SolidColorEffect(c1);
     auto green = new SolidColorEffect(c2);
-    auto dim = new DimEffect(3);
+    auto dim = new DimEffect(4);
 
     int i;
     for (i = 0; i < numSegs; i++) {

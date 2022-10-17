@@ -77,7 +77,7 @@ class AnimationEffect : public Effect {
             return newColor;
         }
 
-    private:
+    protected:
 
         int _frameDivisor;
         int _animationLength;

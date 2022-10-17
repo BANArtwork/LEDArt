@@ -1,5 +1,5 @@
-#ifndef CHASING_EFFECT_H
-#define CHASING_EFFECT_H
+#ifndef CHASING_EFFECT2_H
+#define CHASING_EFFECT2_H
 
 #include "AnimationEffect.h"
 
@@ -7,18 +7,30 @@
  * @brief An effect to create a block of LEDs 
  * that will chase through a segment of LEDs.
  */
-class ChasingEffect : AnimationEffect {
+class ChasingEffect2 : AnimationEffect {
 
     public: 
 
+        typedef uint32_t (*getColor_t)(int index);
 
-        ChasingEffect(
+        /**
+         * @brief Construct a new Chasing Effect object
+         * 
+         * @param frameDivisor Base effect parameter
+         * @param animationLength Base effect parameter
+         * @param getColor Method that will take the index of the current LED in the chase block and return a color for it.
+         * @param length The length of the chasing block
+         * @param segmentLength Length of the segment the chasing block will chase through
+         * @param reverseDirection If true, reverse the chase direction.
+         */
+        ChasingEffect2(
             int frameDivisor,
             int animationLength,
             uint32_t (*getColor)(int index),
             int length,
             int segmentLength = 0,
             bool reverseDirection = false
+
         ) : AnimationEffect(
             frameDivisor,
             animationLength
@@ -29,15 +41,17 @@ class ChasingEffect : AnimationEffect {
             _reverseDirection { reverseDirection }
         {}
 
-protected:
+        virtual uint32_t getColor(int x) {
+            return _getColor(x);
+        }
 
-
-        ChasingEffect(
+        ChasingEffect2(
             int frameDivisor,
             int animationLength,
             int length,
             int segmentLength = 0,
             bool reverseDirection = false
+
         ) : AnimationEffect(
             frameDivisor,
             animationLength
@@ -46,10 +60,6 @@ protected:
             _segmentLength { segmentLength },
             _reverseDirection { reverseDirection }
         {}
-
-        virtual uint32_t getColor(int x) {
-            return _getColor(x);
-        }
 
         AnimationState animationEffectAction(
             int ledX, 
@@ -66,14 +76,12 @@ protected:
             // Calculate offset value for chase.
             int offset = _reverseDirection ? (_segmentLength - ledIndex) : ledIndex;
 
-
-
             // Calculate chasing effect.
             return chasingFade(
                 offset, 
                 frame, 
                 animationLength,
-                this->getColor,
+                this,
                 _length,
                 currentColor,
                 newColor
@@ -82,23 +90,16 @@ protected:
 
     private:
 
-        // Method to get a color value for an LED in the chase block.
         uint32_t (*_getColor)(int index);
-
-        // Length of the chase block (in LEDs)
         int _length;
-
-        // Length of the segment the chase animation will run through.
         int _segmentLength;
-
-        // Flag to reverse chase direction.
         bool _reverseDirection;
 
         static AnimationState chasingFade(
             int offset, 
             unsigned int frame,
             unsigned int animationLength,
-            uint32_t (*getColor)(int index),
+            ChasingEffect2* effectPtr,
             int length,
             uint32_t currentColor,
             uint32_t& newColor
@@ -116,7 +117,7 @@ protected:
             }
 
             // Otherwise set new color value.
-            newColor = getColor(x);
+            newColor = effectPtr->getColor(x);
             return ANIMATING;
         }
 
