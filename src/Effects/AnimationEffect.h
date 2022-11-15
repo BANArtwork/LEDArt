@@ -14,11 +14,14 @@ class AnimationEffect : public Effect {
     public:
 
         /**
-         * @brief Construct a new Animation Effect object
+         * @brief 
+         *  Construct a new Animation Effect object
          * 
-         * @param frameDivisor To calculate animation frame. Higher value ==
-         * slower animation.
-         * @param animationLength Total number of frames in the animation.
+         * @param frameDivisor 
+         *  To calculate animation frame. Higher value ==
+         *  slower animation.
+         * @param animationLength 
+         *  Total number of frames in the animation.
          */
         AnimationEffect(
             int frameDivisor,
@@ -77,7 +80,7 @@ class AnimationEffect : public Effect {
             return newColor;
         }
 
-    private:
+    protected:
 
         int _frameDivisor;
         int _animationLength;
