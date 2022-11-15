@@ -20,6 +20,7 @@
 #include "Effects/ChasingEffect.h"
 
 #define BUTTON_PIN 9
+void switchModes(int mode);
 
 void updateLeds(int frame);
 void checkSegments(const Segment** segs, int numSegs, uint32_t c1, uint32_t c2);
@@ -45,6 +46,8 @@ void deactivateAll() {
     chase->deactivate();
     sparkles->deactivate();
 }
+
+  static  uint32_t redSparkle[1] = { 0xff0000 };
 
 void setup() {
 
@@ -84,14 +87,12 @@ void setup() {
     dim2 = (Effect*) new DimEffect(2);
     dim3 = (Effect*) new DimEffect(4);
     pink = (Effect*) new SolidColorEffect(0xfc03c6);
-    uint32_t redSparkle[1] = { 0xff0000 };
-    sparkles = (Effect*) new SparkleEffect(1, 5, 20, 1, redSparkle);
-    dim2->deactivate();
-    dim3->deactivate();
+    sparkles = (Effect*) new SparkleEffect(1, 400, 500); //, 1, redSparkle);
 
      chase = (Effect*) new ChasingEffect(6, 60, 0x7f7f7f, 5);
+    deactivateAll();
+    switchModes(0);
 
-    
         allLedsSegment.forEach([rainbow, chase, pink, sparkles, dim1, dim2, dim3 ](int index) {
 
             leds[index]->removeEffect(0);
@@ -101,13 +102,14 @@ void setup() {
 
             leds[index]->addEffect(pink);
 
+          //  leds[index]->addEffect(sparkles);
+
        //     auto sparkle = new SparkleEffect(1, 400, 500);
             leds[index]->addEffect((Effect*)dim1);
             leds[index]->addEffect((Effect*)dim2);
             leds[index]->addEffect((Effect*)dim3);
             //leds[index]->addEffect((Effect*)sparkle);
 
-            leds[index]->addEffect(sparkles);
         });
     
     // Check to help map segments.
@@ -213,7 +215,7 @@ void checkButton() {
 
     static int startTime = 0;
     static bool pressing = false;
-    static int mode = 3;
+    static int mode = 0;
 
 
     if (!digitalRead(BUTTON_PIN)) {
