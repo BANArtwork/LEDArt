@@ -13,22 +13,18 @@ class AnimationEffect : public Effect {
 
     public:
 
-        /**
-         * @brief 
-         *  Construct a new Animation Effect object
-         * 
-         * @param frameDivisor 
-         *  To calculate animation frame. Higher value ==
-         *  slower animation.
-         * @param animationLength 
-         *  Total number of frames in the animation.
-         */
-        AnimationEffect(
-            int frameDivisor,
-            int animationLength
-        ) : 
-            _frameDivisor { frameDivisor },
-            _animationLength { animationLength } {}
+        AnimationEffect() {
+            _frameDivisor = 1;
+            _animationLength = 1;
+        }
+
+        void setFrameDiv(int div) {
+            _frameDivisor = div;
+        }
+
+        void setAnimationLength(int length) {
+            _animationLength = length;
+        }
 
     protected: 
 
@@ -65,7 +61,7 @@ class AnimationEffect : public Effect {
             uint32_t newColor;
 
             // Get color for new frame.
-            AnimationState result = animationEffectAction(
+            animationEffectAction(
                 ledX,
                 ledY,
                 ledZ,

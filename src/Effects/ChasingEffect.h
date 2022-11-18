@@ -12,14 +12,24 @@ class ChasingEffect : AnimationEffect {
     public: 
 
         /**
-         * @brief Construct a new Chasing Effect object
+         * @brief 
+         *  Construct a new Chasing Effect object
          * 
          * @param frameDivisor 
+         *  To calculate animation frame. Higher value ==
+         *  slower animation.
          * @param animationLength 
+         *  Total number of frames in the animation.
          * @param chaseLength 
+         *  The length of the segment of LEDs the chase block will chase 
+         *  through.
          * @param blockLength 
+         *  The length of the chase block.
          * @param getColor 
+         *  A callback to get a color based on the index of the LED in the
+         *  chase block.
          * @param reverseDirection 
+         *  A flag to reverse chase direction.
          */
         ChasingEffect(
             int frameDivisor,
@@ -28,32 +38,39 @@ class ChasingEffect : AnimationEffect {
             int blockLength,
             uint32_t (*getColor)(int index),
             bool reverseDirection = false
-        ) : AnimationEffect(
-            frameDivisor,
-            animationLength
-        ),
+        ) : AnimationEffect(),
             _chaseLength { chaseLength },
             _blockLength { blockLength },
             _getColor { getColor },
             _reverseDirection { reverseDirection }
-        {}
+        {   
+            setFrameDiv(frameDivisor);
+            setAnimationLength(animationLength);
+        }
 
 protected:
 
-
+        /**
+         * @brief Protected constructor for subclasses.
+         * 
+         * @param frameDivisor 
+         * @param segmentLength 
+         * @param blockLength 
+         * @param reverseDirection 
+         */
         ChasingEffect(
             int frameDivisor,
             int segmentLength,
             int blockLength,
             
             bool reverseDirection = false
-        ) : AnimationEffect(
-            frameDivisor,
-            segmentLength
-        ),
+        ) : AnimationEffect(),
             _blockLength { blockLength },
             _reverseDirection { reverseDirection }
-        {}
+        {
+            setFrameDiv(frameDivisor);
+            setAnimationLength(segmentLength);
+        }
 
         virtual uint32_t getColor(int x) {
             return _getColor(x);
