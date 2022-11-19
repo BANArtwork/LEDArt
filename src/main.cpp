@@ -57,7 +57,7 @@ void setup() {
     updateLeds(0);
 
     auto rainbow = new ChasingRainbowEffect(5, 256, 5);
-    auto dim = new DimEffect(1);
+    auto dim = new DimEffect(10);
     auto chase = new ChasingEffect(6, 60, 0x7f7f7f, 5);
 
     
