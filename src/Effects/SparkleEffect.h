@@ -13,14 +13,12 @@ class SparkleEffect : AnimationEffect {
     public:
 
         SparkleEffect(
-            int frameDivisor,
             int animationLength,
             unsigned int animationWindow,
             int numSparkleColors,
             uint32_t* sparkleColors
         ) :
         AnimationEffect(
-            frameDivisor,
             animationLength
         ),  
             _animationWindow { animationWindow },
@@ -32,12 +30,10 @@ class SparkleEffect : AnimationEffect {
         }
 
         SparkleEffect(
-            int frameDivisor,
             int animationLength,
             unsigned int animationWindow
         ) :
         AnimationEffect(
-            frameDivisor,
             animationLength
         ),  
             _animationWindow { animationWindow }

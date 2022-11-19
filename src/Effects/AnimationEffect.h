@@ -21,12 +21,27 @@ class AnimationEffect : public Effect {
          * @param animationLength Total number of frames in the animation.
          */
         AnimationEffect(
-            int frameDivisor,
             int animationLength
         ) : 
-            _frameDivisor { frameDivisor },
-            _animationLength { animationLength } {}
+            _animationLength { animationLength },
+            _frameDivisor { 1 },
+            _frameMultiplier { 1 } {}
 
+        void setFrameDivisor(int divisor) {
+            _frameDivisor = divisor;
+        }
+        
+        void setFrameMultiplier(int multiplier) {
+            _frameMultiplier = multiplier;
+        }
+
+        void setOnAnimationCompleteCallback(std::function<void()> onComplete) {
+            _onAnimationComplete = onComplete;
+        }
+
+        void setSpeed(double speed) {
+                _speed = speed;
+        }
     protected: 
 
         enum AnimationState {
@@ -56,18 +71,56 @@ class AnimationEffect : public Effect {
             uint32_t currentColor, 
             uint32_t previousColor
         ) {
-            // Calculate frame for animation. 
-            unsigned int f = frame / _frameDivisor;
+
+
+unsigned int f2;
+
+
+           
+            // First run in new frame.
+            if (frame != _lastFrame) {
+                _animationFrame += _speed;
+            }
+
+
+                 f2 = _animationFrame;
+               //  f2--;
+                f2 %= _animationLength;
+
+             
+
+                        if (frame != _lastFrame) {
+                            if (f2 < _speed){ //_animationLength - _speed + 1) {
+                    logSprintf("first animation frame ");
+                    if (_onAnimationComplete != NULL) {
+                        _onAnimationComplete();
+                    }
+                        }
+                _lastFrame = frame;
+                logSprintf("First run in new frame. Frame: %d, AnimationFrame %0.2f, Mod frame: %d\r\n", frame, _animationFrame, f2);
+                
+                        }
+            
+
+                
+                     
+
+            
+
+
 
             uint32_t newColor;
 
+           // int modLength = (_animationLength * _frameMultiplier) / _frameDivisor;
+
+           // logSprintf("WTF f2: %d\r\n", f2);
             // Get color for new frame.
             AnimationState result = animationEffectAction(
                 ledX,
                 ledY,
                 ledZ,
                 ledIndex,
-                f,
+                f2,
                 _animationLength,
                 currentColor,
                 previousColor,
@@ -79,8 +132,16 @@ class AnimationEffect : public Effect {
 
     private:
 
+        double _animationFrame = 0;
+
+        bool _lastFrameFlag;
+
+        double _speed;
+        unsigned int _lastFrame = 0;
         int _frameDivisor;
+        int _frameMultiplier;
         int _animationLength;
+        std::function<void()> _onAnimationComplete;
 };
 
 #endif

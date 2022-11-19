@@ -1,7 +1,7 @@
 #include <Arduino.h>
 
 // Uncomment to turn logging on.
-//#define USE_LOG
+#define USE_LOG
 
 #include "Util/Logger.h"
 #include "Util/Memcheck.h"
@@ -56,19 +56,31 @@ void setup() {
     // Update to apply black effect.
     updateLeds(0);
 
-    auto rainbow = new ChasingRainbowEffect(5, 256, 5);
+    auto rainbow = new ChasingRainbowEffect(256, 5);
+    rainbow->setFrameDivisor(5);
     auto dim = new DimEffect(10);
-    auto chase = new ChasingEffect(6, 60, 0x7f7f7f, 5);
+    auto chase = new ChasingEffect(560, 0x7f7f7f, 20);
+    chase->setSpeed(1);
 
+
+    static int cycleCounter = 0;
+
+    chase->setOnAnimationCompleteCallback([chase](){    
+         cycleCounter++;
+        cycleCounter %= 6;
+        chase->setSpeed(cycleCounter + 1);
+        logSprintf("Cycle counter: %d\r\n", cycleCounter);
+   
+    });
     
         allLedsSegment.forEach([rainbow, dim, chase](int index) {
 
             leds[index]->removeEffect(0);
-            leds[index]->addEffect((Effect*)rainbow);
-            auto sparkle = new SparkleEffect(1, 400, 500);
-            leds[index]->addEffect((Effect*)dim);
+            //leds[index]->addEffect((Effect*)rainbow);
+            auto sparkle = new SparkleEffect(400, 500);
             //leds[index]->addEffect((Effect*)sparkle);
             leds[index]->addEffect((Effect*)chase);
+            leds[index]->addEffect((Effect*)dim);
         });
     
     // for (int i = 0; i < numStars; i++) {
@@ -153,7 +165,14 @@ void checkLeds() {
 }
 
 void loop() {
-   checkLeds();
+    #ifdef USE_LOG
+        if (Serial.available()) {
+        Serial.clear();
+    #endif
+    checkLeds();
+    #ifdef USE_LOG
+        }
+    #endif
 }
 
 

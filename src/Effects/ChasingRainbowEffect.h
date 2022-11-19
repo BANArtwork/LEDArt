@@ -7,7 +7,7 @@
 /**
  * @brief Chasing rainbow effect.
  */
-class ChasingRainbowEffect : ChasingFadeEffect {
+class ChasingRainbowEffect : public ChasingFadeEffect {
 
     public:
 
@@ -21,12 +21,10 @@ class ChasingRainbowEffect : ChasingFadeEffect {
          * between neighboring LEDs. Higher value == 'narrower' rainbow.
          */
         ChasingRainbowEffect(
-            int frameDivisor,
             int animationLength,
             int fadeStep
         ) :
         ChasingFadeEffect(
-            frameDivisor,
             animationLength,
             fadeStep,
             3,

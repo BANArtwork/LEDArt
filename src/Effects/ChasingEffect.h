@@ -3,12 +3,11 @@
 
 #include "AnimationEffect.h"
 
-class ChasingEffect : AnimationEffect {
+class ChasingEffect : public AnimationEffect {
 
     public: 
 
         ChasingEffect(
-            int frameDivisor,
             int animationLength,
             uint32_t color,
             int length,
@@ -16,7 +15,6 @@ class ChasingEffect : AnimationEffect {
             bool reverseDirection = false
 
         ) : AnimationEffect(
-            frameDivisor,
             animationLength
         ),
             _segmentLength { segmentLength },
@@ -66,12 +64,12 @@ class ChasingEffect : AnimationEffect {
             uint32_t& newColor
         ) {
             // Add frame and LED index to create chasing effect.
-            int x = (offset + frame);
+            int x = (offset + frame + length);
             x = x % animationLength;
 
-            if (x > length) {
+            if (x >= length) {
                 newColor = currentColor;
-                return AnimationState::COMPLETE;
+                return COMPLETE;
             }
 
             newColor = color;

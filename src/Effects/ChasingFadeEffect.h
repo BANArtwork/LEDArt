@@ -7,7 +7,7 @@
 /**
  * @brief An effect that will show a chasing fade between an array of colors.
  */
-class ChasingFadeEffect : FadeEffect {
+class ChasingFadeEffect : public FadeEffect {
 
     public:
 
@@ -24,7 +24,6 @@ class ChasingFadeEffect : FadeEffect {
          * @param colors Array of colors to fade between
          */
         ChasingFadeEffect(
-            int frameDivisor,
             int fadeLength,
             int fadeStep,
             int numColors,
@@ -33,7 +32,6 @@ class ChasingFadeEffect : FadeEffect {
             bool reverseDirection = false
         ) :
         FadeEffect(
-            frameDivisor,
             fadeLength,
             fadeStep,
             numColors,

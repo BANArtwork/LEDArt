@@ -7,7 +7,7 @@
 /**
  * @brief An effect that will fade between an array of colors.
  */
-class FadeEffect : protected AnimationEffect {
+class FadeEffect : public AnimationEffect {
 
     public:
 
@@ -25,14 +25,12 @@ class FadeEffect : protected AnimationEffect {
          * @param colors Array of colors to fade between
          */
         FadeEffect(
-            int frameDivisor,
             int fadeLength,
             int fadeStep,
             int numColors,
             const uint32_t* colors
         ) :
         AnimationEffect(
-            frameDivisor,
             numColors * fadeLength
         ),  
             _fadeStep { fadeStep },
