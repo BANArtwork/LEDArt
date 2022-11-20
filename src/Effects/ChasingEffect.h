@@ -9,6 +9,7 @@ class ChasingEffect : public AnimationEffect {
 
         ChasingEffect(
             int animationLength,
+            int chaseLength,
             uint32_t color,
             int length,
             int segmentLength = 0,
@@ -17,11 +18,16 @@ class ChasingEffect : public AnimationEffect {
         ) : AnimationEffect(
             animationLength
         ),
+            _chaseLength { chaseLength },
             _segmentLength { segmentLength },
             _reverseDirection { reverseDirection },
             _color { color },
             _length { length }
         {}
+
+        void setColor(uint32_t color) {
+            _color = color;
+        }
 
         AnimationState animationEffectAction(
             int ledX, 
@@ -39,7 +45,7 @@ class ChasingEffect : public AnimationEffect {
             return chasingFade(
                 offset, 
                 frame, 
-                animationLength,
+                _chaseLength,
                 _color,
                 _length,
                 currentColor,
@@ -53,11 +59,12 @@ class ChasingEffect : public AnimationEffect {
         bool _reverseDirection;
         uint32_t _color;
         int _length;
+        int _chaseLength;
 
         static AnimationState chasingFade(
             int offset, 
             unsigned int frame,
-            unsigned int animationLength,
+            unsigned int chaseLength,
             uint32_t color,
             int length,
             uint32_t currentColor,
@@ -65,7 +72,7 @@ class ChasingEffect : public AnimationEffect {
         ) {
             // Add frame and LED index to create chasing effect.
             int x = (offset + frame + length);
-            x = x % animationLength;
+            x = x % chaseLength;
 
             if (x >= length) {
                 newColor = currentColor;

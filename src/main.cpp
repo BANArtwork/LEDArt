@@ -1,7 +1,7 @@
 #include <Arduino.h>
 
 // Uncomment to turn logging on.
-#define USE_LOG
+//#define USE_LOG
 
 #include "Util/Logger.h"
 #include "Util/Memcheck.h"
@@ -24,6 +24,8 @@ void checkSegments(const Segment** segs, int numSegs, uint32_t c1, uint32_t c2);
 
 // List of LEDs.
 LinkedList<EffectLed*> leds = LinkedList<EffectLed*>();
+
+uint32_t colors[] = {0x7f7f7f, 0xaf4f4f, 0xcf0f0f};
 
 void setup() {
 
@@ -59,27 +61,48 @@ void setup() {
     auto rainbow = new ChasingRainbowEffect(256, 5);
     rainbow->setFrameDivisor(5);
     auto dim = new DimEffect(10);
-    auto chase = new ChasingEffect(560, 0x7f7f7f, 20);
+    auto chase = new ChasingEffect(560, 280, 0x7f7f7f, 30); // 1 = 560, 2 = 280, 3 = 186
     chase->setSpeed(1);
 
-
+    auto chase2 = new ChasingEffect(560, 560, 0x7f7f7f, 60); // 1 = 560, 2 = 280, 3 = 186
+    auto chase3 = new ChasingEffect(560, 186, 0xff0000, 10); // 1 = 560, 2 = 280, 3 = 186
+chase2->setSpeed(2);
+chase2->setSpeed(3);
     static int cycleCounter = 0;
 
     chase->setOnAnimationCompleteCallback([chase](){    
          cycleCounter++;
         cycleCounter %= 6;
         chase->setSpeed(cycleCounter + 1);
+        chase->setColor(colors[cycleCounter % 3]);
+        logSprintf("Cycle counter: %d\r\n", cycleCounter);
+   
+    });
+    chase2->setOnAnimationCompleteCallback([chase2](){    
+         cycleCounter++;
+        cycleCounter %= 6;
+        chase2->setSpeed(cycleCounter + 2);
+        chase2->setColor(colors[cycleCounter % 3]);
+        logSprintf("Cycle counter: %d\r\n", cycleCounter);
+   
+    });
+    chase3->setOnAnimationCompleteCallback([chase3](){    
+         cycleCounter++;
+        cycleCounter %= 6;
+        chase3->setSpeed(cycleCounter + 3);
         logSprintf("Cycle counter: %d\r\n", cycleCounter);
    
     });
     
-        allLedsSegment.forEach([rainbow, dim, chase](int index) {
+        allLedsSegment.forEach([rainbow, dim, chase, chase2, chase3](int index) {
 
             leds[index]->removeEffect(0);
             //leds[index]->addEffect((Effect*)rainbow);
             auto sparkle = new SparkleEffect(400, 500);
             //leds[index]->addEffect((Effect*)sparkle);
             leds[index]->addEffect((Effect*)chase);
+            leds[index]->addEffect((Effect*)chase2);
+            leds[index]->addEffect((Effect*)chase3);
             leds[index]->addEffect((Effect*)dim);
         });
     
