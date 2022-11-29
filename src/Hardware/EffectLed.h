@@ -49,21 +49,25 @@ class EffectLed {
             // Init working var.
             uint32_t color = 0;
 
-            // Run each effect action.
-            _effectList.forEach([&](Effect* effect){
-                if (effect->isActive()) {
-                    color = effect->effectAction(
-                        _ledX, 
-                        _ledY, 
-                        _ledZ, 
-                        _ledIndex, 
-                        frame, 
-                        color, 
-                        _color
-                    );
-                }
-            });
+            // If the LED is active...
+            if (_active) {
 
+                // Run each effect action.
+                _effectList.forEach([&](Effect* effect){
+                    if (effect->isActive()) {
+                        color = effect->effectAction(
+                            _ledX, 
+                            _ledY, 
+                            _ledZ, 
+                            _ledIndex, 
+                            frame, 
+                            color, 
+                            _color
+                        );
+                    }
+                });
+            } 
+            
             // If the color has changed, then update the LED.
             if (color != _color) {
                 _driver(_ledIndex, color);
@@ -94,6 +98,10 @@ class EffectLed {
             return _color;
         }
         
+        void activate(bool active) {
+            _active = active;
+        }
+
     private:
 
         // Driver for this LED.
@@ -112,6 +120,9 @@ class EffectLed {
 
         // List of effects.
         LinkedList<Effect*> _effectList;
+
+        // Swtich to turn LED on and off.
+        bool _active = true;
 };
 
 #endif

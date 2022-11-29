@@ -3,32 +3,94 @@
 
 #include "AnimationEffect.h"
 
+/**
+ * @brief Class to produce a chasing animation effect.
+ */
 class ChasingEffect : public AnimationEffect {
 
     public: 
 
-        ChasingEffect(
-            int animationLength,
-            int chaseLength,
-            uint32_t color,
-            int length,
-            int segmentLength = 0,
-            bool reverseDirection = false
+        /**
+         * @brief Construct a new Chasing Effect object
+         * 
+         * @param animationLength 
+         */
+        ChasingEffect(int animationLength) : 
+        AnimationEffect(animationLength) {}
 
-        ) : AnimationEffect(
-            animationLength
-        ),
-            _chaseLength { chaseLength },
-            _segmentLength { segmentLength },
-            _reverseDirection { reverseDirection },
-            _color { color },
-            _length { length }
-        {}
-
-        void setColor(uint32_t color) {
-            _color = color;
+        /**
+         * @brief Set the length of the segment that the chase block will
+         * chase through.
+         * 
+         * @param length 
+         */
+        void setChaseLength(int length) {
+            _chaseLength = length;
         }
 
+        /**
+         * @brief Set the length of the chase block.
+         * 
+         * @param length 
+         */
+        void setBlockLength(int length) {
+            _blockLength = length;
+        }
+
+        /**
+         * @brief Set the chase block color to a single color value.
+         * 
+         * @param color 
+         */
+        void setColor(uint32_t color) {
+            _getColor = [color](int x) { return color; };
+        }
+
+        /**
+         * @brief Set a callback to get a color based on the index of an LED
+         * within the chase block.
+         * 
+         * @param getColor 
+         */
+        void setColorCallback(std::function<uint32_t(int)> getColor) {
+            _getColor = getColor;
+        }
+
+        /**
+         * @brief Reverse the chase direction.
+         * 
+         * @param reverse 
+         */
+        void reverseDirection(bool reverse) {
+            _reverseDirection = reverse;
+        }
+
+    protected:
+
+        /**
+         * @brief Method for subclasses to override to get color values.
+         * 
+         * @param x 
+         * @return uint32_t 
+         */
+        virtual uint32_t getColor(int x) {
+            return _getColor(x);
+        }
+
+        /**
+         * @brief Effect action implementation.
+         * 
+         * @param ledX 
+         * @param ledY 
+         * @param ledZ 
+         * @param ledIndex 
+         * @param frame 
+         * @param animationLength 
+         * @param currentColor 
+         * @param previousColor 
+         * @param newColor 
+         * @return AnimationState 
+         */
         AnimationState animationEffectAction(
             int ledX, 
             int ledY, 
@@ -41,13 +103,18 @@ class ChasingEffect : public AnimationEffect {
             uint32_t& newColor
         ) {
 
-            int offset = _reverseDirection ? (_segmentLength - ledIndex) : ledIndex;
+            // Get chase offset for forward or reverse.
+            int offset = _reverseDirection ? (_chaseLength - ledIndex) : ledIndex;
+
+            // Get getColor callback.
+            std::function<uint32_t(int)> f = [this](int x){ return this->getColor(x); };
+
             return chasingFade(
                 offset, 
                 frame, 
                 _chaseLength,
-                _color,
-                _length,
+                _blockLength,
+                f,
                 currentColor,
                 newColor
             );
@@ -55,34 +122,43 @@ class ChasingEffect : public AnimationEffect {
 
     private:
 
-        int _segmentLength;
-        bool _reverseDirection;
-        uint32_t _color;
-        int _length;
+        // Flag to reverse chase direction.
+        bool _reverseDirection = false;
+
+        // Length of the chase block.
+        int _blockLength;
+
+        // Length of the segment the chase block will chase through.
         int _chaseLength;
+
+        // Method to get a color value for an LED in the chase block.
+        std::function<uint32_t(int)> _getColor;
 
         static AnimationState chasingFade(
             int offset, 
             unsigned int frame,
             unsigned int chaseLength,
-            uint32_t color,
-            int length,
+            int blockLength,
+            std::function<uint32_t(int)> getColor, 
             uint32_t currentColor,
             uint32_t& newColor
         ) {
             // Add frame and LED index to create chasing effect.
-            int x = (offset + frame + length);
+            int x = (offset + frame + blockLength);
             x = x % chaseLength;
 
-            if (x >= length) {
+            // If we are past the end of the chase block...
+            if (x >= blockLength) {
+
+                // Then don't change color.
                 newColor = currentColor;
                 return COMPLETE;
             }
 
-            newColor = color;
+            // Otherwise, get a new color.
+            newColor = getColor(x);
             return ANIMATING;
         }
-
 };
 
 #endif

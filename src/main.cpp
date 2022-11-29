@@ -1,7 +1,10 @@
 #include <Arduino.h>
 
 // Uncomment to turn logging on.
-//#define USE_LOG
+#define USE_LOG
+
+// Uncomment to step through each frame one at a time based on serial input.
+//#define USE_FRAME_STEP
 
 #include "Util/Logger.h"
 #include "Util/Memcheck.h"
@@ -19,13 +22,34 @@
 #include "Effects/WhatADayAwayEffect.h"
 #include "Effects/ChasingEffect.h"
 
+// Pin definitions.
+#define DISTANCE_PIN 14
+#define MOTOR_LIMIT_PIN 22
+#define MOTOR_PIN 4
+#define SW1_PIN 8
+#define SW2_PIN 9
+
+// Operating modes.
+typedef enum Modes {
+    MODE_OFF,
+    MODE_LEDS_ONLY_NO_PROX_SENSOR,
+    MODE_LEDS_AND_MOTOR_WITH_PROX_SENSOR
+} Modes_t;
+
+// Method sigs.
 void updateLeds(int frame);
 void checkSegments(const Segment** segs, int numSegs, uint32_t c1, uint32_t c2);
+Modes_t checkMode();
+void checkLeds();
+void activateLeds(bool active);
 
 // List of LEDs.
 LinkedList<EffectLed*> leds = LinkedList<EffectLed*>();
 
-uint32_t colors[] = {0x7f7f7f, 0xaf4f4f, 0xcf0f0f};
+// Chase effects.
+auto chase1 = new ChasingEffect(560);
+auto chase2 = new ChasingEffect(560);
+auto chase3 = new ChasingEffect(560);
 
 void setup() {
 
@@ -34,6 +58,13 @@ void setup() {
 
     // Start the LED driver.
     ledDriver.begin();
+
+    // Set up pins and write HIGH to motor pin to turn it off.
+    pinMode(MOTOR_LIMIT_PIN, INPUT_PULLUP);
+    pinMode(MOTOR_PIN, OUTPUT);
+    pinMode(SW1_PIN, INPUT_PULLUP);
+    pinMode(SW2_PIN, INPUT_PULLUP);
+    digitalWrite(MOTOR_PIN, HIGH);
 
     // Effect to black out all LEDs on startup.
     auto black = new SolidColorEffect(0);
@@ -58,79 +89,182 @@ void setup() {
     // Update to apply black effect.
     updateLeds(0);
 
-    auto rainbow = new ChasingRainbowEffect(256, 5);
-    rainbow->setFrameDivisor(5);
+    // Dim effect.
     auto dim = new DimEffect(10);
-    auto chase = new ChasingEffect(560, 280, 0x7f7f7f, 30); // 1 = 560, 2 = 280, 3 = 186
-    chase->setSpeed(1);
 
-    auto chase2 = new ChasingEffect(560, 560, 0x7f7f7f, 60); // 1 = 560, 2 = 280, 3 = 186
-    auto chase3 = new ChasingEffect(560, 186, 0xff0000, 10); // 1 = 560, 2 = 280, 3 = 186
-chase2->setSpeed(2);
-chase2->setSpeed(3);
-    static int cycleCounter = 0;
+    // Set up chase effects.
+    chase1->setChaseLength(280);
+    chase1->setBlockLength(30);
+    chase1->setColor(0xffffff);
+    chase1->setSpeed(1);
+    chase1->deactivate();
 
-    chase->setOnAnimationCompleteCallback([chase](){    
-         cycleCounter++;
-        cycleCounter %= 6;
-        chase->setSpeed(cycleCounter + 1);
-        chase->setColor(colors[cycleCounter % 3]);
-        logSprintf("Cycle counter: %d\r\n", cycleCounter);
-   
+    chase2->setChaseLength(560);
+    chase2->setBlockLength(60);
+    chase2->setColor(0xffffff);
+    chase2->setSpeed(2);
+    chase2->deactivate();
+
+    chase3->setChaseLength(186);
+    chase3->setBlockLength(10);
+    chase3->setColor(0xffffff);
+    chase3->setSpeed(3);
+    chase3->deactivate();
+
+    // Attach chase effects and dim to LEDs.
+    allLedsSegment.forEach([dim, chase1, chase2, chase3](int index) {
+        leds[index]->removeEffect(0);
+        leds[index]->addEffect((Effect*)chase1);
+        leds[index]->addEffect((Effect*)chase2);
+        leds[index]->addEffect((Effect*)chase3);
+        leds[index]->addEffect((Effect*)dim);
     });
-    chase2->setOnAnimationCompleteCallback([chase2](){    
-         cycleCounter++;
-        cycleCounter %= 6;
-        chase2->setSpeed(cycleCounter + 2);
-        chase2->setColor(colors[cycleCounter % 3]);
-        logSprintf("Cycle counter: %d\r\n", cycleCounter);
-   
-    });
-    chase3->setOnAnimationCompleteCallback([chase3](){    
-         cycleCounter++;
-        cycleCounter %= 6;
-        chase3->setSpeed(cycleCounter + 3);
-        logSprintf("Cycle counter: %d\r\n", cycleCounter);
-   
-    });
-    
-        allLedsSegment.forEach([rainbow, dim, chase, chase2, chase3](int index) {
-
-            leds[index]->removeEffect(0);
-            //leds[index]->addEffect((Effect*)rainbow);
-            auto sparkle = new SparkleEffect(400, 500);
-            //leds[index]->addEffect((Effect*)sparkle);
-            leds[index]->addEffect((Effect*)chase);
-            leds[index]->addEffect((Effect*)chase2);
-            leds[index]->addEffect((Effect*)chase3);
-            leds[index]->addEffect((Effect*)dim);
-        });
-    
-    // for (int i = 0; i < numStars; i++) {
-    //     auto s = stars[i];
-    //     //auto blink = new BlinkEffect(0xffffff, 500, 500);
-    //     auto solid = new SolidColorEffect(0xffffff);
-    //     s->forEach([ solid](int index) {
-    //         leds[index]->removeEffect(0);
-    //         leds[index]->removeEffect(1);
-    //         //leds[index]->removeEffect(2);
-    //         leds[index]->addEffect((Effect*)solid);
-    //     });
-    // };
-
-    // allLedsSegment.forEach([rainbow, dim](int index) {
-    //     leds[index]->removeEffect(0);
-    //     leds[index]->addEffect((Effect*)rainbow);
-    //     auto sparkle = new SparkleEffect(10, 1500, rand());
-    //     leds[index]->addEffect((Effect*)sparkle);
-    //     leds[index]->addEffect((Effect*)dim);
-    // });
 
     // Check to help map segments.
     //checkSegments(segments, numSegments, 0x000000ff, 0x00ff00ff);
     //checkSegments(stars, numStars, 0x00ff0000, 0x0000ff00);
 
     log("Setup complete");
+}
+
+void loop() {
+
+    // Step through each frame based on console input.
+    #ifdef USE_LOG
+    #ifdef USE_FRAME_STEP
+        if (Serial.available()) {
+        Serial.clear();
+    #endif
+    #endif
+
+    bool useMotorAndProxSensor = false;
+
+    static int cycleTime = 0;
+    static int cycleCount = 0;
+    static bool proxTrigger = false;
+
+    // If limit switch is active, then kill the motor.
+    if (digitalRead(MOTOR_LIMIT_PIN)) {
+        analogWrite(MOTOR_PIN, 255);
+    }
+
+    // Activate LEDs in case they were turned off.
+    activateLeds(true);
+    
+    // Get operating mode from switches.
+    Modes_t mode = checkMode();
+    switch (mode) {
+
+    // Continuous LEDs, no prox sensor or motor action: Clear flag.
+    case MODE_LEDS_ONLY_NO_PROX_SENSOR:
+
+        // Make sure chase effects are active.
+        chase1->activate();
+        chase2->activate();
+        chase3->activate();
+
+        useMotorAndProxSensor = false;
+        break;
+
+    // LEDs and motor action with prox sensor: Set flag
+    case MODE_LEDS_AND_MOTOR_WITH_PROX_SENSOR:
+        useMotorAndProxSensor = true;
+        break;
+
+    // Off mode: deactivate LEDs. Update to turn them off. Then return.
+    case MODE_OFF:
+    default:
+        activateLeds(false);
+        checkLeds();
+        return;
+    }
+
+    // Update LEDs.
+    checkLeds();
+    
+    // If cycle time has elapsed...
+    int now = millis();
+    if (now - cycleTime > 1000) {
+
+        // Update time var.
+        cycleTime = now;
+
+        // Inc count.
+        cycleCount++;
+        cycleCount %= 20;
+
+        int speed;
+        
+        // On the last cycle, if we are running 
+        // with the prox sensor and motor...
+        if (cycleCount >= 19 && useMotorAndProxSensor) {
+
+            // Deactivate chase effects.
+            chase1->deactivate();
+            chase2->deactivate();
+            chase3->deactivate();
+
+            analogWrite(MOTOR_PIN, 255);
+
+            // And clear the trigger flag.
+            proxTrigger = false;
+        } 
+        
+        // For the last 5 cycles set speed to 9.
+        else if (cycleCount >= 15) {
+            speed = 9;
+        }  
+        
+        // For the first 5 cycles, set speed to 1.
+        else if (cycleCount < 6) {
+            speed = 1;
+        } 
+        
+        // For all other cycles, speed is cycle - 5.
+        else {
+            speed = cycleCount - 5;
+        }
+
+        // Fade from white to red as speed increases.
+        uint32_t color = interpolateColors(0xffffff, 0xff0000, 9, speed);
+        chase1->setColor(color);
+        chase2->setColor(color);
+        chase3->setColor(color);
+
+        // Set animation speed.
+        chase1->setSpeed(speed);
+        chase2->setSpeed(speed);
+        chase3->setSpeed(speed);
+    }
+
+    // If not using motor and prox sensor, then we are done.
+    if (!useMotorAndProxSensor) return;
+
+    // Otherwise, if prox sensor is triggered...
+    int distance = analogRead(DISTANCE_PIN);
+    if (distance > 300 && proxTrigger == false) {
+
+        logSprintf("Prox trigger. Distance: %d", distance);
+
+        // Set flag to avoid retriggering before animation is complete.
+        proxTrigger = true;
+
+        // Activate chase effects.
+        chase1->activate();
+        chase2->activate();
+        chase3->activate();
+
+        // Activate motor.
+        //if(!digitalRead(MOTOR_LIMIT_PIN)) {
+            analogWrite(MOTOR_PIN, 1);
+       // }
+    }
+
+    #ifdef USE_LOG
+    #ifdef USE_FRAME_STEP
+        }
+    #endif
+    #endif
 }
 
 /**
@@ -158,6 +292,11 @@ void checkSegments(const Segment** segs, int numSegs, uint32_t c1, uint32_t c2) 
     updateLeds(0);
 }
 
+/**
+ * @brief Update LEDs.
+ * 
+ * @param frame 
+ */
 void updateLeds(int frame) {
 
     // Run through list of LEDs and update them.
@@ -171,31 +310,57 @@ void updateLeds(int frame) {
     ledDriver.show();
 }
 
-void checkLeds() {
+/**
+ * @brief Get operating mode from switches.
+ * 
+ * @return Modes_t 
+ */
+Modes_t checkMode() {
 
-    // Frame counter.
-    static unsigned int frame = 0;
+    static Modes_t lastMode;
 
-    // Time check.
-    //static unsigned long time = millis();
-    //unsigned long check = millis();
-    //if (check - time > 1) {
-        //time = check;
-    
-        updateLeds(frame);
-        frame++;
-    //}
-}
-
-void loop() {
-    #ifdef USE_LOG
-        if (Serial.available()) {
-        Serial.clear();
-    #endif
-    checkLeds();
-    #ifdef USE_LOG
+    if (digitalRead(SW1_PIN)) {
+        if (lastMode != MODE_OFF) {
+            lastMode = MODE_OFF;
+            logSprintf("Mode Off.\r\n");
         }
-    #endif
+        return MODE_OFF;
+    }
+
+    if (!digitalRead(SW2_PIN)) {
+
+        if (lastMode != MODE_LEDS_AND_MOTOR_WITH_PROX_SENSOR) {
+            lastMode = MODE_LEDS_AND_MOTOR_WITH_PROX_SENSOR;
+            logSprintf("Mode LEDs and motor with prox sensor.\r\n");
+        }
+        return MODE_LEDS_AND_MOTOR_WITH_PROX_SENSOR;
+    }
+
+    if (lastMode != MODE_LEDS_ONLY_NO_PROX_SENSOR) {
+        lastMode = MODE_LEDS_ONLY_NO_PROX_SENSOR;
+        logSprintf("Mode LEDs only. Continuous.\r\n");
+    }
+    return MODE_LEDS_ONLY_NO_PROX_SENSOR;
 }
 
+/**
+ * @brief Update LEDs and frame counter.
+ */
+void checkLeds() {
+    static unsigned int frame = 0;
+    updateLeds(frame);
+    frame++;
+}
 
+/**
+ * @brief Turn LEDs on or off.
+ * 
+ * @param active 
+ */
+void activateLeds(bool active) {
+    EffectLed* led = leds.start();
+    while (led != NULL) {
+        led->activate(active);
+        led = leds.next();
+    }
+}
