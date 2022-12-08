@@ -42,6 +42,8 @@ void checkSegments(const Segment** segs, int numSegs, uint32_t c1, uint32_t c2);
 Modes_t checkMode();
 void checkLeds();
 void activateLeds(bool active);
+void activateMotor();
+void deactivateMotor();
 
 // List of LEDs.
 LinkedList<EffectLed*> leds = LinkedList<EffectLed*>();
@@ -112,7 +114,7 @@ void setup() {
     chase3->deactivate();
 
     // Attach chase effects and dim to LEDs.
-    allLedsSegment.forEach([dim, chase1, chase2, chase3](int index) {
+    allLedsSegment.forEach([dim](int index) {
         leds[index]->removeEffect(0);
         leds[index]->addEffect((Effect*)chase1);
         leds[index]->addEffect((Effect*)chase2);
@@ -145,7 +147,8 @@ void loop() {
 
     // If limit switch is active, then kill the motor.
     if (digitalRead(MOTOR_LIMIT_PIN)) {
-        analogWrite(MOTOR_PIN, 255);
+        logSprintf("loop: Motor limit hit. Deactivating motor.\r\n");
+        deactivateMotor();
     }
 
     // Activate LEDs in case they were turned off.
@@ -204,7 +207,8 @@ void loop() {
             chase2->deactivate();
             chase3->deactivate();
 
-            analogWrite(MOTOR_PIN, 255);
+            // Deactivate motor.
+            deactivateMotor();
 
             // And clear the trigger flag.
             proxTrigger = false;
@@ -244,7 +248,7 @@ void loop() {
     int distance = analogRead(DISTANCE_PIN);
     if (distance > 300 && proxTrigger == false) {
 
-        logSprintf("Prox trigger. Distance: %d", distance);
+        logSprintf("Prox trigger. Distance: %d\r\n", distance);
 
         // Set flag to avoid retriggering before animation is complete.
         proxTrigger = true;
@@ -253,11 +257,11 @@ void loop() {
         chase1->activate();
         chase2->activate();
         chase3->activate();
+    }
 
-        // Activate motor.
-        //if(!digitalRead(MOTOR_LIMIT_PIN)) {
-            analogWrite(MOTOR_PIN, 1);
-       // }
+    // If prox is triggered, then activate the motor.
+    if (proxTrigger) {
+        activateMotor();
     }
 
     #ifdef USE_LOG
@@ -363,4 +367,51 @@ void activateLeds(bool active) {
         led->activate(active);
         led = leds.next();
     }
+}
+
+static int motorKillTime;
+static bool motorRunning;
+
+void activateMotor() {
+
+    // If the limit switch is active...
+    if(digitalRead(MOTOR_LIMIT_PIN)) {
+
+        logSprintf("activateMotor: Motor limit hit. Deactivating.\r\n");
+
+        // Then deactivate and bail.
+        deactivateMotor();
+        return;
+    }
+
+    // If the motor is already running then bail.
+    if (motorRunning) {
+        logSprintf("activatemotor: Motor already running.\r\n");
+        return;
+    }
+
+    // If the spinner has not had enough time to drop all the way, then bail.
+    int now = millis();
+    if (now - motorKillTime < 3000) {
+        logSprintf("activateMotor: Motor kill time not elapsed: %d.\r\n", now - motorKillTime);
+        return;
+    }
+
+    logSprintf("activateMotor: Activating motor.\r\n");
+
+    // Activate motor and set state flag.
+    analogWrite(MOTOR_PIN, 1);
+    motorRunning = true;
+}
+
+void deactivateMotor() {
+
+    logSprintf("deactivateMotor: Deactivating motor.\r\n");
+
+    // Set motor kill time.
+    motorKillTime = millis();
+
+    // Deactivate motor and set state flag.
+    analogWrite(MOTOR_PIN, 255);
+    motorRunning = false;
 }
